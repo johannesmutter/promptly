@@ -1,2 +1,11 @@
-<h1>Welcome to SvelteKit</h1>
-<p>Visit <a href="https://kit.svelte.dev">kit.svelte.dev</a> to read the documentation</p>
+<script>
+	import { blocks } from "$lib/stores.js";
+	import Editor from "$lib/Editor.svelte";
+</script>
+
+<Editor {blocks} />
+
+<!-- Debugging -->
+<pre>
+{JSON.stringify($blocks,null,2)}
+</pre>
