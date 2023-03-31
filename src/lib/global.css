@@ -1,0 +1,171 @@
+:root {  
+  /* Fonts */
+  --font-sans: system-ui,-apple-system,Segoe UI,Roboto,Noto Sans,Ubuntu,Cantarell,Helvetica Neue;
+  --font-serif: Georgia, Cambria, "Times New Roman", Times, serif;
+  --font-mono: Consolas, Menlo, Monaco, "Liberation Mono", monospace;
+
+  /* Sizes */
+  --size-1: 4px;
+  --size-2: 8px;
+  --size-3: 12px;
+  --size-4: 16px;
+  --size-5: 20px;
+  --size-6: 24px;
+  --size-7: 28px;
+  --size-8: 32px;
+  --size-9: 36px;
+  --size-10: 40px;
+  --size-11: 44px;
+  --size-12: 48px;
+  --size-14: 56px;
+  --size-16: 64px;
+  --size-20: 80px;
+  --size-24: 96px;
+  --size-28: 112px;
+  --size-32: 128px;
+  --size-36: 144px;
+  --size-40: 160px;
+  --size-44: 176px;
+  --size-48: 192px;
+  --size-52: 208px;
+  --size-56: 224px;
+  --size-60: 240px;
+  --size-64: 256px;
+  --size-72: 288px;
+  --size-80: 320px;
+  --size-96: 384px;
+  --size-full: 100%;
+  --size-screen: 100vw;
+  --size-min: min-content;
+  --size-max: max-content;
+  
+  /* Container Sizes */
+  --width-xs: 480px;
+  --width-sm: 640px;
+  --width-md: 768px;
+  --width-lg: 1024px;
+  --width-xl: 1280px;
+
+  /* Radius */
+  --radius-xs: 3px;
+  --radius-sm: 6px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-xl: 16px;
+  --radius-100: 100%;
+  --radius-full: 9999px;
+
+  /* Shadows */
+  --shadow-xs: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+  --shadow-sm: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  --shadow-md: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  --shadow-lg: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  --shadow-xl: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+
+  /* Blur */
+  --blur-xs: blur(4px);
+  --blur-sm: blur(8px);
+  --blur-md: blur(16px);
+  --blur-lg: blur(24px);
+  --blur-xl: blur(40px);
+
+  /* Shades of Grey */
+  --grey-50: hsl(39, 20%, 98%);
+  --grey-100: hsl(39, 13%, 95.5%);
+  --grey-200: hsl(40, 12.2%, 92%);
+  --grey-300: hsl(40, 11.7%, 84.9%);
+  --grey-400: hsl(40, 9.1%, 67.6%);
+  --grey-500: hsl(40, 7.5%, 50%);
+  --grey-600: hsl(39, 12.8%, 38.2%);
+  --grey-700: hsl(38, 14.3%, 28.8%);
+  --grey-800: hsl(37, 17.8%, 21%);
+  --grey-900: hsl(36, 27.3%, 8.6%);
+  --black: hsl(35, 14.9%, 9.2%);
+  --grey: var(--grey-500);
+  --white: #FFF;
+  --off-white: var(--grey-50);
+
+  /* Blue shades */
+  --blue-dark: hsl(209, 72%, 38%);
+  --blue-base: hsl(209, 72%, 53%);
+  --blue-light: hsl(209, 62%, 68%);
+  --blue-lightest: hsl(209, 62%, 83%);
+  --text-blue: var(--blue-dark);
+  --bg-blue: var(--blue-lightest);
+
+  /* Green shades */
+  --green-dark: hsl(112, 56%, 31%);
+  --green-base: hsl(112, 56%, 46%);
+  --green-light: hsl(110, 32%, 61%);
+  --green-lightest: hsl(110, 32%, 76%);
+  --text-green: var(--green-dark);
+  --bg-green: var(--green-lightest);
+
+  /* Orange shades */
+  --orange-dark: hsl(31, 63%, 42%);
+  --orange-base: hsl(31, 63%, 57%);
+  --orange-light: hsl(30, 76%, 72%);
+  --orange-lightest: hsl(30, 76%, 87%);
+  --text-orange: var(--orange-dark);
+  --bg-orange: var(--orange-lightest);
+
+  /* Pink shades */
+  --pink-dark: hsl(342, 43%, 45%);
+  --pink-base: hsl(342, 43%, 60%);
+  --pink-light: hsl(342, 69%, 75%);
+  --pink-lightest: hsl(342, 69%, 90%);
+  --text-pink: var(--pink-dark);
+  --bg-pink: var(--pink-lightest);
+
+  /* Red shades */
+  --red-dark: hsl(14, 55%, 46%);
+  --red-base: hsl(14, 55%, 61%);
+  --red-light: hsl(12, 86%, 76%);
+  --red-lightest: hsl(12, 86%, 91%);
+  --text-red: var(--red-dark);
+  --bg-red: var(--red-lightest);
+
+  /* Turquoise shades */
+  --turquoise-dark: hsl(178, 85%, 26%);
+  --turquoise-base: hsl(178, 85%, 41%);
+  --turquoise-light: hsl(177, 34%, 56%);
+  --turquoise-lightest: hsl(177, 34%, 71%);
+  --text-turquoise: var(--turquoise-dark);
+  --bg-turquoise: var(--turquoise-lightest);
+
+  /* Violet shades */
+  --violet-dark: hsl(274, 42%, 50%);
+  --violet-base: hsl(274, 42%, 65%);
+  --violet-light: hsl(275, 49%, 80%);
+  --violet-lightest: hsl(275, 49%, 95%);
+  --text-violet: var(--violet-dark);
+  --bg-violet: var(--violet-lightest);
+
+  /* Yellow shades */
+  --yellow-dark: hsl(40, 63%, 37%);
+  --yellow-base: hsl(40, 63%, 52%);
+  --yellow-light: hsl(45, 79%, 67%);
+  --yellow-lightest: hsl(45, 79%, 82%);
+  --text-yellow: var(--yellow-dark);
+  --bg-yellow: var(--yellow-lightest);
+
+  --primary: var(--blue-base);
+  --primary-hover: var(--blue-dark);
+}
+
+/* Text alignment classes */
+.text-left {
+  text-align: left;
+}
+
+.text-center {
+  text-align: center;
+}
+
+.text-right {
+  text-align: right;
+}
+
+.text-justify {
+  text-align: justify;
+}

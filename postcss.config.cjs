@@ -4,7 +4,6 @@ const postcssNormalize = require('postcss-normalize')
 const postcssPresetEnv = require('postcss-preset-env');
 const cssnano = require('cssnano');
 const postcssImport = require("postcss-import");
-const mixins = require('postcss-mixins');
 const colorFunction = require("postcss-color-function")
 const flexbugs = require('postcss-flexbugs-fixes');
 const easingGadients = require('postcss-easing-gradients');
@@ -13,8 +12,6 @@ const colorguard = require('colorguard');
 const config = {
 	plugins: [
 		postcssImport,
-
-		mixins,
 
 		postcssNesting,
 

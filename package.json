@@ -30,6 +30,7 @@
 	},
 	"type": "module",
 	"dependencies": {
+		"@picocss/pico": "^1.5.7",
 		"colorguard": "^1.2.1",
 		"cssnano": "^6.0.0",
 		"postcss-color-function": "^4.1.0",

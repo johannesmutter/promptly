@@ -14,10 +14,11 @@
 	
 	$: commandsLength = commands.length;
 	
+	/** @type {HTMLDivElement} */
 	let dropdownRef;
 	let selectedCommandIndex = 0;
 	let width = 150;
-	let height = 150;
+	let height = 200;
 	let x = 0;
 	let y = 0;
 

@@ -1,6 +1,6 @@
 <script>
-	import '../app.scss';
-	import '../app.postcss';
+	import '@picocss/pico'
+	import '$lib/global.css';
 </script>
 
 <slot />

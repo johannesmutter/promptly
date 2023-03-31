@@ -444,7 +444,7 @@
 		--base-line-height: 1.5;
 		display: inline;
 		position: relative;
-		border: 0.1px solid hsla(211, 100%, 80%, 1);
+		border: 0.1px solid var(--blue-lightest);
 		word-break: break-all;
 		word-wrap: break-word; /* break long words */
 		overflow-wrap: break-word;
@@ -461,7 +461,7 @@
 	.editor .caret {
 		width: 2px;
 		height: 100%;
-		background-color: hsla(211, 100%, 50%, 0.9);
+		background-color: var(--blue-base);
 		position: absolute;
 		pointer-events: none;
 		left: 0;
