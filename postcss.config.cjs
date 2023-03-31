@@ -7,7 +7,7 @@ const postcssImport = require("postcss-import");
 const colorFunction = require("postcss-color-function")
 const flexbugs = require('postcss-flexbugs-fixes');
 const easingGadients = require('postcss-easing-gradients');
-const colorguard = require('colorguard');
+// const colorguard = require('colorguard');
 
 const config = {
 	plugins: [
@@ -32,7 +32,8 @@ const config = {
 		autoprefixer,
 
 		// Check for color clashes. To use colorguard: run "npx colorguard styles.css". This will output a report showing any color clashes and suggestions for alternative colors.
-		colorguard,
+		// usage as postcss plugin has inferior reporting. That's why we disable it by default:
+		// colorguard,
 
 		// minimize css
 		// @CSS BUGs: in case of unexpected CSS behaviour disable this.

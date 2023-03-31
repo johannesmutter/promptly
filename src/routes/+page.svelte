@@ -1,9 +1,9 @@
 <script>
-	import { blocks } from "$lib/stores.js";
+	import { blocks, rootBlock } from "$lib/stores/blocks.js";
 	import Editor from "$lib/Editor.svelte";
 </script>
 
-<Editor {blocks} />
+<Editor blockID={$rootBlock} />
 
 <!-- Debugging -->
 <pre>

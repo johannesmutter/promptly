@@ -101,9 +101,6 @@
 	}
 </script>
 
-currentCaret: 
-<pre>{JSON.stringify(currentCaret,null,2)}</pre>
-
 <div
     bind:this={dropdownRef}
     class="command-dropdown"
@@ -127,8 +124,6 @@ currentCaret:
         </button>
     {/each}
 </div>
-
-selectedCommandIndex: {selectedCommandIndex}
 
 <style>
 	.command-dropdown {

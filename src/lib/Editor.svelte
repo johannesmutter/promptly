@@ -1,6 +1,7 @@
 <script>
-	import { onMount, tick } from "svelte";
-	import CommandDropdown from "./CommandDropdown.svelte";
+	import { onMount } from "svelte";
+	import CommandDropdown from "$lib/CommandDropdown.svelte";
+	import { blocks } from "$lib/stores/blocks";
 
 	/**
 	 * @typedef {Object} Block
@@ -8,16 +9,18 @@
 	 * @property {string} text - The text content of the block
 	 */
 	/** @type Block[] */
-	export let blocks;
 
+	export let blockID;
+	
 	// Refs
 	let 
-		/** @type {HTMLTextAreaElement|null} */		
+		/** @type {HTMLTextAreaElement} */		
 		textareaRef, 
-		/** @type {HTMLDivElement|null} */
+		/** @type {HTMLDivElement} */
 		editorRef, 
 		/** @type {CommandDropdown|null} */
 		commandDropdownRef, 
+		/** @type {HTMLElement[]} */
 		blockRefs = [];
 
 	/** @type number */
@@ -28,6 +31,8 @@
 	 * @property {number} offset - The offset of the caret within the block
 	 * @property {number} x - The x-coordinate of the caret
 	 * @property {number} y - The y-coordinate of the caret
+	 * @property {number} absX - The absolute x-coordinate of the caret relative to the viewport
+	 * @property {number} absY - The absolute y-coordinate of the caret relative to the viewport
 	 * @property {number} lineIndex - The index of the line containing the caret
 	 * @property {number} height - The height of the line containing the caret
 	 */
@@ -36,6 +41,8 @@
 		offset: 0,
 		x: 0,
 		y: 0,
+		absX: 0,
+		absY: 0,
 		lineIndex: 0,
 		height: 0
 	}
@@ -60,7 +67,7 @@
 			action: () => {
 				insertBlockAtCaret({ name: "Untitled Prompt", text: "Design your prompt" }, 2)
 				setCaretPosition(currentBlock + 1, 0);
-				commandDropdownRef.close()
+				commandDropdownRef?.close()
 			},
 		},
 	];
@@ -80,15 +87,15 @@
 
 		// Hide the commandDropdown if the double brackets at the current cursor position are deleted
 		if (!(newText.charAt(cursorPosition - 1) === "[" && newText.charAt(cursorPosition - 2) === "[")) {
-			commandDropdownRef.close()
+			commandDropdownRef?.close()
 		}
 
 		// Split the new text into blocks
 		const newBlocks = newText.split("\n");
 
 		// Update the text and HTML for the current block
-		$blocks[currentBlock] = {
-			...$blocks[currentBlock],
+		$blocks[blockID].children[currentBlock] = {
+			...$blocks[blockID].children[currentBlock],
 			text: newBlocks[0],
 		};
 
@@ -102,10 +109,11 @@
 		}
 	}
 
+	/** @param {KeyboardEvent} event */
 	function handleKeyDown(event) {
 		const { key, ctrlKey, metaKey, shiftKey, altKey } = event;
 
-		const charBeforeCaret = $blocks[currentBlock].text.charAt(currentCaret.offset-1);
+		const charBeforeCaret = $blocks[blockID].children[currentBlock].text.charAt(currentCaret.offset-1);
 
 		if (key === "Enter") {
 			event.preventDefault();
@@ -114,7 +122,7 @@
 			event.preventDefault();
 			toggleBold();
 		} else if ( key === "[" && charBeforeCaret === "[") {
-			commandDropdownRef.open()
+			commandDropdownRef?.open()
 		} else if ((ctrlKey || metaKey) && key === "c") {
 			//event.preventDefault();
 			//copy();
@@ -150,7 +158,7 @@
 	function setCaretPosition(blockIndex, offset) {
 		currentBlock = blockIndex;
 		currentCaret.offset = offset;
-		textareaRef.value = $blocks[currentBlock].text;
+		textareaRef.value = $blocks[blockID].children[currentBlock].text;
 		setTimeout(() => {
 			textareaRef.setSelectionRange(currentCaret.offset, currentCaret.offset);
 			setVirtualCaretPosition();
@@ -160,20 +168,20 @@
 
 	/**
 	 * Inserts a block at the caret position. Blocks that are undefiend/null will be filtered out.
-	 * @param {?Block} blockData - The block data to insert at the caret position, can be null/undefined
+	 * @param {?Block} insertedBlock  - The block data to insert at the caret position, can be null/undefined
 	 * @param {?number} offsetBefore - An optional negative offset, e.g. set to "2" to remove the brackets [[
- */
+	 */
 	function insertBlockAtCaret(insertedBlock,offsetBefore = 0) {
-		const currentText = $blocks[currentBlock].text;
-		const beforeCaretText = currentText.slice(0, currentCaret.offset - offsetBefore);
+		const currentText = $blocks[blockID].children[currentBlock].text;
+		const beforeCaretText = currentText.slice(0, currentCaret.offset - (offsetBefore ?? 0));
 		const afterCaretText = currentText.slice(currentCaret.offset);
 
 		const newBlocks = [
-			...$blocks.slice(0, currentBlock),
-			{ ...$blocks[currentBlock], text: beforeCaretText }, 				// old block with text before caret
+			...$blocks[blockID].children.slice(0, currentBlock),
+			{ ...$blocks[blockID].children[currentBlock], text: beforeCaretText }, 				// old block with text before caret
 			...(insertedBlock ? [insertedBlock] : []),            			// new insertion if defined
 			{ text: afterCaretText }, 																	// new block with text after caret
-			...$blocks.slice(currentBlock + 1),
+			...$blocks[blockID].children.slice(currentBlock + 1),
 		];
 		
 		textareaRef.value = afterCaretText; 		// update textarea with text from after caret
@@ -181,24 +189,24 @@
 	}
 
 	function enter() {
-		insertBlockAtCaret()
+		insertBlockAtCaret(null,0)
 		// Question: Should a new block be created, or should we split the current block at caret position
 		setCaretPosition(currentBlock + 1, 0);
 	}
 
-	function moveCursorUp() {
+	function moveCursorUp(shiftKey,altKey) {
 		if (currentBlock > 0) {
 			currentBlock--;
-			const prevBlockTextLength = $blocks[currentBlock].text.length;
+			const prevBlockTextLength = $blocks[blockID].children[currentBlock].text.length;
 			const newOffset = Math.min(currentCaret.offset, prevBlockTextLength);
 			setCaretPosition(currentBlock, newOffset);
 		}
 	}
 
-	function moveCursorDown() {
-		if (currentBlock < $blocks.length - 1) {
+	function moveCursorDown(shiftKey,altKey) {
+		if (currentBlock < $blocks[blockID].children.length - 1) {
 			currentBlock++;
-			const nextBlockTextLength = $blocks[currentBlock].text.length;
+			const nextBlockTextLength = $blocks[blockID].children[currentBlock].text.length;
 			const newOffset = Math.min(currentCaret.offset, nextBlockTextLength);
 			setCaretPosition(currentBlock, newOffset);
 		}
@@ -228,17 +236,17 @@
 	}
 
 	function moveCursorByWord(direction) {
-		const text = $blocks[currentBlock].text;
+		const text = $blocks[blockID].children[currentBlock].text;
 		const slicedText = direction === 'left' ? text.slice(0, currentCaret.offset) : text.slice(currentCaret.offset);
 
 		const newCaretOffset = findWordBoundary(slicedText, direction);
 
-		if (direction === 'right' && newCaretOffset === text.length && currentBlock < $blocks.length - 1) {
+		if (direction === 'right' && newCaretOffset === text.length && currentBlock < $blocks[blockID].children.length - 1) {
 			currentBlock++;
 			currentCaret.offset = 0;
 		} else if (direction === 'left' && newCaretOffset === 0 && currentBlock > 0) {
 			currentBlock--;
-			currentCaret.offset = $blocks[currentBlock].text.length;
+			currentCaret.offset = $blocks[blockID].children[currentBlock].text.length;
 		} else {
 			currentCaret.offset = newCaretOffset;
 		}
@@ -252,7 +260,7 @@
 				currentCaret.offset--;
 			} else if (currentBlock > 0) {
 				currentBlock--;
-				currentCaret.offset = $blocks[currentBlock].text.length;
+				currentCaret.offset = $blocks[blockID].children[currentBlock].text.length;
 			}
 		}
 
@@ -263,9 +271,9 @@
 		if (altKey) {
 			moveCursorByWord('right');
 		} else {
-			if (currentCaret.offset < $blocks[currentBlock].text.length) {
+			if (currentCaret.offset < $blocks[blockID].children[currentBlock].text.length) {
 				currentCaret.offset++;
-			} else if (currentBlock < $blocks.length - 1) {
+			} else if (currentBlock < $blocks[blockID].children.length - 1) {
 				currentBlock++;
 				currentCaret.offset = 0;
 			}
@@ -352,22 +360,22 @@
 	}
 
 	function toggleBold() {
-		if (!$blocks[currentBlock]) {
+		if (!$blocks[blockID].children[currentBlock]) {
 			console.error(`Error: block ${currentBlock} does not exist`);
 			return;
 		}
 
-		const { text, annotations } = $blocks[currentBlock];
+		const { text, annotations } = $blocks[blockID].children[currentBlock];
 		const isBold = annotations?.includes('bold')
 		const newAnnotations = annotations?.length > 0 && annotations.includes('bold') ? 
 					annotations.filter(_ => _ !== 'bold') : 
 		[...(annotations || []), 'bold'];
-		$blocks[currentBlock].annotations = newAnnotations;
+		$blocks[blockID].children[currentBlock].annotations = newAnnotations;
 	}
 
 	onMount(()=>{
 		// set initial value
-		textareaRef.value = $blocks[currentBlock].text;
+		textareaRef.value = $blocks[blockID].children[currentBlock].text;
 	})
 </script>
 
@@ -385,26 +393,29 @@
 		  on:click={focusTextarea} 
 		  on:keydown
 		>
-      {#each $blocks as block, i}
-        <div 
-					class="block" 
-					class:bold={block.annotations?.includes('bold')}
-					on:click={handleClick} 
-					on:keydown
-					data-block={i}
-					bind:this={blockRefs[i]}
-				>
-					{@html block.text}
-					{#if currentBlock === i}
-						<span 
-							class="caret" 
-							style:left="{currentCaret.x}px"
-							style:top="{currentCaret.y}px"
-							style:height="{currentCaret.height}px"
-						></span>
-					{/if}
-        </div>
-      {/each}
+			{#if $blocks[blockID]}
+				{#each $blocks[blockID].children as block, i}
+					<div 
+						class="block" 
+						data-type={block.type}
+						class:bold={block.annotations?.includes('bold')}
+						on:click={handleClick} 
+						on:keydown
+						data-block={i}
+						bind:this={blockRefs[i]}
+					>
+						{@html block.text}
+						{#if currentBlock === i}
+							<span 
+								class="caret" 
+								style:left="{currentCaret.x}px"
+								style:top="{currentCaret.y}px"
+								style:height="{currentCaret.height}px"
+							></span>
+						{/if}
+					</div>
+				{/each}
+			{/if}
     </div>
 	  <CommandDropdown
 			bind:this={commandDropdownRef}
