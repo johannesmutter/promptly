@@ -1,7 +1,7 @@
 <script>
 	import { onMount } from "svelte";
 	import CommandDropdown from "$lib/CommandDropdown.svelte";
-	import { blocks, insertBlock } from "$lib/stores/blocks";
+	import { blocks } from "$lib/stores/blocks";
 	import Caret from "./Caret.svelte";
 	import { v4 as uuidv4 } from 'uuid';
 
@@ -62,9 +62,7 @@
 		{			
 			name: "Prompt",
 			action: () => {
-				// insertBlockAtCaret({ text: "Untitled Prompt", id: newID}, 2)
-				insertBlock({text: 'Untitled Prompt'},blockID,currentBlock,currentCaret.offset,2)
-				// textareaRef.value = $blocks[blockID].children[currentBlock + 1].text;
+				blocks.insertBlock({text: 'Untitled Prompt'},blockID,currentBlock,currentCaret.offset,2)
 				setCaretPosition(currentBlock + 1, 0);
 				commandDropdownRef?.close()
 			},
@@ -167,36 +165,9 @@
 		}, 0);
 	}
 
-	/**
-	 * Inserts a block at the caret position. Blocks that are undefiend/null will be filtered out.
-	 * @param {?Block} insertedBlock  - The block data to insert at the caret position, can be null/undefined
-	 * @param {?number} offsetBefore - An optional negative offset, e.g. set to "2" to remove the brackets [[
-	 */
-	function insertBlockAtCaret(insertedBlock,offsetBefore = 0) {
-		const currentText = $blocks[blockID].children[currentBlock].text;
-		const beforeCaretText = currentText.slice(0, currentCaret.offset - (offsetBefore ?? 0));
-		const afterCaretText = currentText.slice(currentCaret.offset);
-
-		const newBlocks = [
-			...$blocks[blockID].children.slice(0, currentBlock),
-			{ ...$blocks[blockID].children[currentBlock], text: beforeCaretText }, 				// old block with text before caret
-			...(insertedBlock ? [insertedBlock] : []),            			// new insertion if defined
-			{ text: afterCaretText }, 																	// new block with text after caret
-			...$blocks[blockID].children.slice(currentBlock + 1),
-		];
-		
-		textareaRef.value = afterCaretText; 		// update textarea with text from after caret
-		blocks.set(newBlocks);
-	}
-
-
-
-
 
 	function enter() {
-		// insertBlockAtCaret(null,0)
-		insertBlock(undefined,blockID,currentBlock,currentCaret.offset)
-		// textareaRef.value = $blocks[blockID].children[currentBlock + 1].text;
+		blocks.insertBlock(undefined,blockID,currentBlock,currentCaret.offset)
 		// Question: Should a new block be created, or should we split the current block at caret position
 		setCaretPosition(currentBlock + 1, 0);
 	}
