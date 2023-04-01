@@ -39,6 +39,7 @@
 	},
 	"type": "module",
 	"dependencies": {
-		"@picocss/pico": "^1.5.7"
+		"@picocss/pico": "^1.5.7",
+		"uuid": "^9.0.0"
 	}
 }

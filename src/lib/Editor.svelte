@@ -1,16 +1,13 @@
 <script>
 	import { onMount } from "svelte";
 	import CommandDropdown from "$lib/CommandDropdown.svelte";
-	import { blocks } from "$lib/stores/blocks";
+	import { blocks, insertBlock } from "$lib/stores/blocks";
+	import Caret from "./Caret.svelte";
+	import { v4 as uuidv4 } from 'uuid';
 
-	/**
-	 * @typedef {Object} Block
-	 * @property {string} name - The name of the block
-	 * @property {string} text - The text content of the block
-	 */
-	/** @type Block[] */
 
-	export let blockID;
+	/** @type {string} */
+	 export let blockID;
 	
 	// Refs
 	let 
@@ -65,7 +62,9 @@
 		{			
 			name: "Prompt",
 			action: () => {
-				insertBlockAtCaret({ name: "Untitled Prompt", text: "Design your prompt" }, 2)
+				// insertBlockAtCaret({ text: "Untitled Prompt", id: newID}, 2)
+				insertBlock({text: 'Untitled Prompt'},blockID,currentBlock,currentCaret.offset,2)
+				// textareaRef.value = $blocks[blockID].children[currentBlock + 1].text;
 				setCaretPosition(currentBlock + 1, 0);
 				commandDropdownRef?.close()
 			},
@@ -91,22 +90,24 @@
 		}
 
 		// Split the new text into blocks
-		const newBlocks = newText.split("\n");
+		// const newBlocks = newText.split("\n");
 
 		// Update the text and HTML for the current block
 		$blocks[blockID].children[currentBlock] = {
 			...$blocks[blockID].children[currentBlock],
-			text: newBlocks[0],
+			// text: newBlocks[0],
+			text: newText,
 		};
 
 		// Update the text and HTML for any additional blocks
-		for (let i = 1; i < newBlocks.length; i++) {
-			currentBlock++;
-			blocks.splice(currentBlock, 0, {
-				...blocks[currentBlock],
-				text: newBlocks[i],
-			});
-		}
+		// for (let i = 1; i < newBlocks.length; i++) {
+		// 	console.log("test")
+		// 	currentBlock++;
+		// 	blocks.splice(currentBlock, 0, {
+		// 		...blocks[currentBlock],
+		// 		text: newBlocks[i],
+		// 	});
+		// }
 	}
 
 	/** @param {KeyboardEvent} event */
@@ -188,8 +189,14 @@
 		blocks.set(newBlocks);
 	}
 
+
+
+
+
 	function enter() {
-		insertBlockAtCaret(null,0)
+		// insertBlockAtCaret(null,0)
+		insertBlock(undefined,blockID,currentBlock,currentCaret.offset)
+		// textareaRef.value = $blocks[blockID].children[currentBlock + 1].text;
 		// Question: Should a new block be created, or should we split the current block at caret position
 		setCaretPosition(currentBlock + 1, 0);
 	}
@@ -235,6 +242,7 @@
 		}
 	}
 
+	/** @param {'left'|'right'} direction */
 	function moveCursorByWord(direction) {
 		const text = $blocks[blockID].children[currentBlock].text;
 		const slicedText = direction === 'left' ? text.slice(0, currentCaret.offset) : text.slice(currentCaret.offset);
@@ -300,62 +308,66 @@
 	function setVirtualCaretPosition() {
     const blockNode = blockRefs[currentBlock];
 
-		if (blockNode) {
+		if (!blockNode) {
+			return
+		}
 			
-			const textNode = blockNode.firstChild;
+		const textNode = blockNode.firstChild;
 
-			// Create a new Range object, used to represent a range of text in the DOM
-			const range = document.createRange(); 
+		// Create a new Range object, used to represent a range of text in the DOM
+		const range = document.createRange(); 
 
-			// Set the start + end of the range to the current caret's offset within the text node
-			// This essentially creates a zero-width range at the caret's position
-			range.setStart(textNode, currentCaret.offset);
-			range.setEnd(textNode, currentCaret.offset);
-			
-			const caretRect = range.getBoundingClientRect(); // get the caret position relative to the viewport
-			
-			// These rectangles represent the lines of text within the block
-			const rects = blockNode.getClientRects();
-			
-			// Find the index of the current line based on the caret's rect, using binary search
-			let lineIndex = 0, left = 0, right = rects.length - 1;
+		// Ensure the caret offset is within the bounds of the text node's length
+		const caretOffset = Math.min(currentCaret.offset, textNode?.length);
 
-			while (left <= right) {
-				let mid = Math.floor((left + right) / 2);
+		// Set the start + end of the range to the current caret's offset within the text node
+		// This essentially creates a zero-width range at the caret's position
+		range.setStart(textNode, caretOffset);
+		range.setEnd(textNode, caretOffset);
+		
+		const caretRect = range.getBoundingClientRect(); // get the caret position relative to the viewport
+		
+		// These rectangles represent the lines of text within the block
+		const rects = blockNode.getClientRects();
+		
+		// Find the index of the current line based on the caret's rect, using binary search
+		let lineIndex = 0, left = 0, right = rects.length - 1;
 
-				if (caretRect.top > rects[mid].top) {
-					lineIndex = mid;
-					left = mid + 1;
-				} else {
-					right = mid - 1;
-				}
+		while (left <= right) {
+			let mid = Math.floor((left + right) / 2);
+
+			if (caretRect.top > rects[mid].top) {
+				lineIndex = mid;
+				left = mid + 1;
+			} else {
+				right = mid - 1;
 			}
-			
-			const currentRect = rects[lineIndex];
-			
-			// rectInlineOffsetLeft calculates the left offset of the first inline element in the current line for accurate virtual caret positioning. It uses the first line's rectangle left position if not on the first line, otherwise the current line's rectangle left position. This accounts for indentation caused by preceding inline blocks.
-			const rectInlineOffsetLeft = lineIndex >= 1 ? rects[0].left : currentRect.left;	
-			
-			const newX = caretRect.left - rectInlineOffsetLeft;
-			
-			//const lineHeight = currentRect.height;
-			const lineHeight = blockNode.getBoundingClientRect().height / rects.length
+		}
+		
+		const currentRect = rects[lineIndex];
+		
+		// rectInlineOffsetLeft calculates the left offset of the first inline element in the current line for accurate virtual caret positioning. It uses the first line's rectangle left position if not on the first line, otherwise the current line's rectangle left position. This accounts for indentation caused by preceding inline blocks.
+		const rectInlineOffsetLeft = lineIndex >= 1 ? rects[0].left : currentRect.left;	
+		
+		const newX = caretRect.left - rectInlineOffsetLeft;
+		
+		//const lineHeight = currentRect.height;
+		const lineHeight = blockNode.getBoundingClientRect().height / rects.length
 
-			// Set y relative to the editor
-			const editorRect = editorRef.getBoundingClientRect();
-			//const newY = caretRect.top - editorRect.top + (caretRect.height > 0 ? caretRect.height : 0);
-			const newY = lineHeight * lineIndex
+		// Set y relative to the editor
+		// const editorRect = editorRef.getBoundingClientRect();
+		//const newY = caretRect.top - editorRect.top + (caretRect.height > 0 ? caretRect.height : 0);
+		const newY = lineHeight * lineIndex
 
-			// update caret
-			currentCaret = {
-				...currentCaret,
-				x: newX,
-				y: newY,
-				absX: caretRect.left,
-				absY: caretRect.top,
-				lineIndex: lineIndex,
-				height: lineHeight
-			}
+		// update caret
+		currentCaret = {
+			...currentCaret,
+			x: newX,
+			y: newY,
+			absX: caretRect.left,
+			absY: caretRect.top,
+			lineIndex: lineIndex,
+			height: lineHeight
 		}
 	}
 
@@ -394,26 +406,20 @@
 		  on:keydown
 		>
 			{#if $blocks[blockID]}
-				{#each $blocks[blockID].children as block, i}
+				{#each $blocks[blockID].children as {id, text, annotations}, i}
+
 					<div 
-						class="block" 
-						data-type={block.type}
-						class:bold={block.annotations?.includes('bold')}
+						class="block {id ? 'prompt' : ''}" 
+						class:bold={annotations?.includes('bold')}
 						on:click={handleClick} 
 						on:keydown
 						data-block={i}
 						bind:this={blockRefs[i]}
 					>
-						{@html block.text}
-						{#if currentBlock === i}
-							<span 
-								class="caret" 
-								style:left="{currentCaret.x}px"
-								style:top="{currentCaret.y}px"
-								style:height="{currentCaret.height}px"
-							></span>
-						{/if}
+						{@html text}
+						{#if currentBlock === i}<Caret left={currentCaret.x} top={currentCaret.y} height={currentCaret.height} />{/if}
 					</div>
+
 				{/each}
 			{/if}
     </div>
@@ -468,28 +474,8 @@
 	.block.bold {
 		font-weight: 700;
 	}
-
-	.editor .caret {
-		width: 2px;
-		height: 100%;
-		background-color: var(--blue-base);
-		position: absolute;
-		pointer-events: none;
-		left: 0;
-		top: 0;
-		opacity: 1;
-		animation: cursor-blink 800ms steps(10) infinite 800ms;
-	}
-
-	@keyframes cursor-blink {
-		0% {
-			opacity: 0;
-		}
-		50% {
-			opacity: 1;
-		}
-		100% {
-			opacity: 0;
-		}
+	.block.prompt {
+		background-color: var(--yellow-lightest);
+		color: var(--yellow-dark);
 	}
 </style>
