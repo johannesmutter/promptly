@@ -4,10 +4,12 @@
 	import { blocks } from "$lib/stores/blocks";
 	import Caret from "./Caret.svelte";
 	import { v4 as uuidv4 } from 'uuid';
+	import Prompt from "./blocks/Prompt.svelte";
+	import { children } from "svelte/internal";
 
 
 	/** @type {string} */
-	 export let blockID;
+	 export let parentID;
 	
 	// Refs
 	let 
@@ -21,7 +23,9 @@
 		blockRefs = [];
 
 	/** @type number */
-	let currentBlock = 0;
+	let currentBlockIndex = 0;
+	$: currentBlockData = $blocks?.[parentID]?.children?.[currentBlockIndex]
+	$: currentBlockText = currentBlockData?.text ?? ( currentBlockData?.id ? $blocks[currentBlockData.id].text : '')
 
 	/**
 	 * @typedef {Object} CaretPosition
@@ -62,8 +66,14 @@
 		{			
 			name: "Prompt",
 			action: () => {
-				blocks.insertBlock({text: 'Untitled Prompt'},blockID,currentBlock,currentCaret.offset,2)
-				setCaretPosition(currentBlock + 1, 0);
+				blocks.insertBlock(
+					{text: 'Untitled Prompt', type: 'prompt'},
+					parentID,
+					currentBlockIndex,
+					currentCaret.offset,
+					2
+				)
+				setCaretPosition(currentBlockIndex + 1, 0);
 				commandDropdownRef?.close()
 			},
 		},
@@ -87,32 +97,39 @@
 			commandDropdownRef?.close()
 		}
 
-		// Split the new text into blocks
-		// const newBlocks = newText.split("\n");
+		// Update the text for the current block
+		if(currentBlockData){
 
-		// Update the text and HTML for the current block
-		$blocks[blockID].children[currentBlock] = {
-			...$blocks[blockID].children[currentBlock],
-			// text: newBlocks[0],
-			text: newText,
-		};
+			const currentChildID = currentBlockData?.id;
+			console.log(`
+			newText: ${newText}
+			currentChildID: ${currentChildID}
+			currentBlockData: ${currentBlockData}
+			`
+			)
+			
 
-		// Update the text and HTML for any additional blocks
-		// for (let i = 1; i < newBlocks.length; i++) {
-		// 	console.log("test")
-		// 	currentBlock++;
-		// 	blocks.splice(currentBlock, 0, {
-		// 		...blocks[currentBlock],
-		// 		text: newBlocks[i],
-		// 	});
-		// }
+			// 1. if block has type/ id, update the block at the store root
+			if(currentChildID){
+				blocks.updateBlockText(currentChildID,newText);
+				// $blocks[currentChildID].text = newText
+
+			} else {
+				// 2. if the block is text only, update the child in [parentID].children[currentBlockIndex]
+				blocks.updateChildText(parentID,currentBlockIndex,newText);
+				// $blocks[parentID].children[currentBlockIndex] = {
+				// 	...currentBlockData,
+				// 	text: newText,
+				// };
+			}
+		}
 	}
 
 	/** @param {KeyboardEvent} event */
 	function handleKeyDown(event) {
 		const { key, ctrlKey, metaKey, shiftKey, altKey } = event;
 
-		const charBeforeCaret = $blocks[blockID].children[currentBlock].text.charAt(currentCaret.offset-1);
+		const charBeforeCaret = currentBlockText?.charAt(currentCaret.offset-1);
 
 		if (key === "Enter") {
 			event.preventDefault();
@@ -155,10 +172,10 @@
 	}
 
 	function setCaretPosition(blockIndex, offset) {
-		currentBlock = blockIndex;
+		currentBlockIndex = blockIndex;
 		currentCaret.offset = offset;
-		textareaRef.value = $blocks[blockID].children[currentBlock].text;
 		setTimeout(() => {
+			textareaRef.value = currentBlockText ?? '';
 			textareaRef.setSelectionRange(currentCaret.offset, currentCaret.offset);
 			setVirtualCaretPosition();
 			focusTextarea();
@@ -167,26 +184,26 @@
 
 
 	function enter() {
-		blocks.insertBlock(undefined,blockID,currentBlock,currentCaret.offset)
+		blocks.insertBlock(undefined,parentID,currentBlockIndex,currentCaret.offset)
 		// Question: Should a new block be created, or should we split the current block at caret position
-		setCaretPosition(currentBlock + 1, 0);
+		setCaretPosition(currentBlockIndex + 1, 0);
 	}
 
 	function moveCursorUp(shiftKey,altKey) {
-		if (currentBlock > 0) {
-			currentBlock--;
-			const prevBlockTextLength = $blocks[blockID].children[currentBlock].text.length;
+		if (currentBlockIndex > 0) {
+			currentBlockIndex--;
+			const prevBlockTextLength = currentBlockText.length;
 			const newOffset = Math.min(currentCaret.offset, prevBlockTextLength);
-			setCaretPosition(currentBlock, newOffset);
+			setCaretPosition(currentBlockIndex, newOffset);
 		}
 	}
 
 	function moveCursorDown(shiftKey,altKey) {
-		if (currentBlock < $blocks[blockID].children.length - 1) {
-			currentBlock++;
-			const nextBlockTextLength = $blocks[blockID].children[currentBlock].text.length;
+		if (currentBlockIndex < $blocks[parentID].children.length - 1) {
+			currentBlockIndex++;
+			const nextBlockTextLength = currentBlockText.length;
 			const newOffset = Math.min(currentCaret.offset, nextBlockTextLength);
-			setCaretPosition(currentBlock, newOffset);
+			setCaretPosition(currentBlockIndex, newOffset);
 		}
 	}
 
@@ -215,17 +232,17 @@
 
 	/** @param {'left'|'right'} direction */
 	function moveCursorByWord(direction) {
-		const text = $blocks[blockID].children[currentBlock].text;
+		const text = currentBlockText;
 		const slicedText = direction === 'left' ? text.slice(0, currentCaret.offset) : text.slice(currentCaret.offset);
 
 		const newCaretOffset = findWordBoundary(slicedText, direction);
 
-		if (direction === 'right' && newCaretOffset === text.length && currentBlock < $blocks[blockID].children.length - 1) {
-			currentBlock++;
+		if (direction === 'right' && newCaretOffset === text.length && currentBlockIndex < $blocks[parentID].children.length - 1) {
+			currentBlockIndex++;
 			currentCaret.offset = 0;
-		} else if (direction === 'left' && newCaretOffset === 0 && currentBlock > 0) {
-			currentBlock--;
-			currentCaret.offset = $blocks[blockID].children[currentBlock].text.length;
+		} else if (direction === 'left' && newCaretOffset === 0 && currentBlockIndex > 0) {
+			currentBlockIndex--;
+			currentCaret.offset = currentBlockText.length;
 		} else {
 			currentCaret.offset = newCaretOffset;
 		}
@@ -237,28 +254,28 @@
 		} else {
 			if (currentCaret.offset > 0) {
 				currentCaret.offset--;
-			} else if (currentBlock > 0) {
-				currentBlock--;
-				currentCaret.offset = $blocks[blockID].children[currentBlock].text.length;
+			} else if (currentBlockIndex > 0) {
+				currentBlockIndex--;
+				currentCaret.offset = currentBlockText.length;
 			}
 		}
 
-		setCaretPosition(currentBlock, currentCaret.offset);
+		setCaretPosition(currentBlockIndex, currentCaret.offset);
 	}
 
 	function moveCursorRight(shiftKey, altKey) {
 		if (altKey) {
 			moveCursorByWord('right');
 		} else {
-			if (currentCaret.offset < $blocks[blockID].children[currentBlock].text.length) {
+			if (currentCaret.offset < currentBlockText.length) {
 				currentCaret.offset++;
-			} else if (currentBlock < $blocks[blockID].children.length - 1) {
-				currentBlock++;
+			} else if (currentBlockIndex < $blocks[parentID].children.length - 1) {
+				currentBlockIndex++;
 				currentCaret.offset = 0;
 			}
 		}
 
-		setCaretPosition(currentBlock, currentCaret.offset);
+		setCaretPosition(currentBlockIndex, currentCaret.offset);
 	}
 
 	function handleClick(event) {
@@ -266,7 +283,7 @@
 		const range = window.getSelection().getRangeAt(0);
 		const clickedOffset = range.startOffset;
 
-		if (currentBlock !== blockIndex || currentCaret.offset !== clickedOffset) {
+		if (currentBlockIndex !== blockIndex || currentCaret.offset !== clickedOffset) {
 			setCaretPosition(blockIndex, clickedOffset);
 		}
 	}
@@ -277,7 +294,7 @@
 	}
 
 	function setVirtualCaretPosition() {
-    const blockNode = blockRefs[currentBlock];
+    const blockNode = blockRefs[currentBlockIndex];
 
 		if (!blockNode) {
 			return
@@ -343,22 +360,22 @@
 	}
 
 	function toggleBold() {
-		if (!$blocks[blockID].children[currentBlock]) {
-			console.error(`Error: block ${currentBlock} does not exist`);
+		if (!currentBlockData) {
+			console.error(`Error: block ${currentBlockIndex} does not exist`);
 			return;
 		}
 
-		const { text, annotations } = $blocks[blockID].children[currentBlock];
+		const { text, annotations } = currentBlockData;
 		const isBold = annotations?.includes('bold')
 		const newAnnotations = annotations?.length > 0 && annotations.includes('bold') ? 
 					annotations.filter(_ => _ !== 'bold') : 
 		[...(annotations || []), 'bold'];
-		$blocks[blockID].children[currentBlock].annotations = newAnnotations;
+		currentBlockData.annotations = newAnnotations;
 	}
 
 	onMount(()=>{
 		// set initial value
-		textareaRef.value = $blocks[blockID].children[currentBlock].text;
+		textareaRef.value = currentBlockText;
 	})
 </script>
 
@@ -376,8 +393,8 @@
 		  on:click={focusTextarea} 
 		  on:keydown
 		>
-			{#if $blocks[blockID]}
-				{#each $blocks[blockID].children as {id, text, annotations}, i}
+			{#if $blocks[parentID]}
+				{#each $blocks[parentID].children as {id, text, annotations}, i}
 
 					<div 
 						class="block {id ? 'prompt' : ''}" 
@@ -387,10 +404,14 @@
 						data-block={i}
 						bind:this={blockRefs[i]}
 					>
-						{@html text}
-						{#if currentBlock === i}<Caret left={currentCaret.x} top={currentCaret.y} height={currentCaret.height} />{/if}
+						{#if typeof id === 'string' && id !== undefined}
+							<!-- <Prompt {id} /> -->
+							{@html $blocks[id].text}
+						{:else}
+							{@html text}
+						{/if}
+						{#if currentBlockIndex === i}<Caret left={currentCaret.x} top={currentCaret.y} height={currentCaret.height} />{/if}
 					</div>
-
 				{/each}
 			{/if}
     </div>
@@ -401,6 +422,24 @@
 			{currentCaret}
 		/>
   </div>
+
+
+
+<!-- Debugging -->
+<pre>
+{#each $blocks?.[parentID]?.children as child, i }
+<span style={currentBlockIndex === i ? 'color: red' : ''}>{JSON.stringify(child,null,0)}
+</span>
+{/each}
+</pre>
+<pre>
+{#each Object.entries($blocks) as [id,block] }
+<span style={(currentBlockData?.id === id) ? 'color: red' : ''}>{JSON.stringify(block,null,0)}
+</span>	
+<br>
+{/each}
+</pre>
+	
 
 <style>
 	textarea {
@@ -447,6 +486,8 @@
 	}
 	.block.prompt {
 		background-color: var(--yellow-lightest);
-		color: var(--yellow-dark);
+	}
+	pre {
+		font-size: 12px;
 	}
 </style>
