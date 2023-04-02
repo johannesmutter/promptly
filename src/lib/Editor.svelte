@@ -456,7 +456,7 @@
 </div>
 
 <!-- List all blocks with id -->
-<div>
+<div class="referenced-blocks">
   {#each uniqueChildren as child, i}
 		{#if child.id}
 		<details class="child-block-container">
@@ -485,7 +485,7 @@
 </pre>
 	 -->
 
-<style>
+<style lang="postcss">
 	textarea {
 		min-width: 0;
     min-height: 0;
@@ -535,9 +535,17 @@
 		font-size: 12px;
 	}
 
+	.referenced-blocks {
+		display: grid;
+		gap: 10px;
+		grid-template-columns: repeat(auto-fill, minmax(50ex, 1fr));
+		grid-template-rows: masonry;
+		align-items: flex-start;
+	}
+
 	.child-block-container {
 		background-color: var(--grey-200);
-		margin: var(--size-5);
+		margin: var(--size-3);
 		padding: var(--size-2);
 	}
 	:global(.child-block-container .child-block-container){

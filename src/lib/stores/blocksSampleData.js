@@ -11,7 +11,7 @@ export const sampleData = {
 			{text: ', starting on ' },
 			{id: '3c71b7f8-7c65-4251-a9ce-6feff919b7cc' }, // text: 'start date', 
 			{text: ' plus/minus ' },
-			{id: '7d5c5bf9-dcb7-4815-b303-1be5de29523e' }, // text: 'flexible days', 
+			{id: '635c9251-cf7b-47e8-802a-a7552fc64fb7' }, // text: 'flexible days', 
 			{text: ' and ending on ' },
 			{id: 'edb9d293-84ca-4a8a-8682-b8c90d2d7e09' }, // text: 'end date', 
 			{text: ' plus/minus ' },
@@ -51,10 +51,6 @@ export const sampleData = {
 		children: [
 			{text: 'May 1st, 2023'},
 		]
-	},
-	'7d5c5bf9-dcb7-4815-b303-1be5de29523e': {
-    type: 'prompt',
-		text: 'flexible days',
 	},
 	'edb9d293-84ca-4a8a-8682-b8c90d2d7e09': {
     type: 'prompt',
