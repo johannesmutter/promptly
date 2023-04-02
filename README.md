@@ -1,38 +1,53 @@
-# create-svelte
+# Promptly
 
-Everything you need to build a Svelte project, powered by [`create-svelte`](https://github.com/sveltejs/kit/tree/master/packages/create-svelte).
+Promptly is a prompt management platform for prompt-based generative AI platforms. It provides a range of features to help users manage their prompts easily. Promptly offers a prompt archive, conversational search, prompt gallery, and prompt design interface. The platform is built using SvelteKit and GPT3.5 by OpenAI.
 
-## Creating a project
+## Features
 
-If you're seeing this, you've probably already done this step. Congrats!
+- 🎨 **Prompt Design Interface**: The prompt design interface provides users with a simple and intuitive interface to create new prompts.
 
-```bash
-# create a new project in the current directory
-npm create svelte@latest
+- 🖼️ **Prompt Gallery**: The prompt gallery feature allows users to browse through a range of prompts and save them to their archive.
 
-# create a new project in my-app
-npm create svelte@latest my-app
-```
+- 📚 **Prompt Archive**: The platform offers a prompt archive where users can store their prompts and quickly access them whenever needed.
 
-## Developing
+- 🔎 **Conversational Search**: The conversational search feature allows users to search for prompts by asking natural language questions.
 
-Once you've created a project and installed dependencies with `npm install` (or `pnpm install` or `yarn`), start a development server:
+## Technologies
 
-```bash
-npm run dev
+Promptly is built on the following technologies:
 
-# or start the server and open the app in a new browser tab
-npm run dev -- --open
-```
+- [SvelteKit](https://kit.svelte.dev/)
+- [GPT3.5 by OpenAI](https://openai.com/)
 
-## Building
+## Installation
 
-To create a production version of your app:
+To run the project locally, follow these steps:
+
+1. Clone the repository:
 
 ```bash
-npm run build
+git clone https://github.com/johannesmutter/promptly.git
 ```
 
-You can preview the production build with `npm run preview`.
+Install dependencies:
+```bash
+cd {repo-name}
+yarn add
+```
 
-> To deploy your app, you may need to install an [adapter](https://kit.svelte.dev/docs/adapters) for your target environment.
+Start the development server:
+```bash
+yarn run dev
+```
+
+## Contributions
+We welcome contributions from the community. If you want to contribute to the project, please follow these steps:
+
+- Fork the repository.
+- Create a new branch for your changes.
+- Make your changes and commit them.
+- Push your changes to your fork.
+- Submit a pull request.
+
+### License
+This project is licensed under GNU Affero General Public License (AGPL).
