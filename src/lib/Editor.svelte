@@ -21,6 +21,7 @@
 
 	/** @type number */
 	let currentBlockIndex = 0;
+	
 
 	/**
 	 * @typedef {Object} CaretPosition
@@ -74,6 +75,16 @@
 		},
 	];
 	
+	/**
+	 * Get the current child object and its text from the $blocks store.
+	 * @returns {{currentChild: {id: string}|undefined, currentChildText: string}}
+	 */
+	function getCurrentChildAndText() {
+		const currentChild = $blocks[parentID]?.children?.[currentBlockIndex];
+		const currentChildText = currentChild?.text ?? (currentChild?.id ? $blocks[currentChild.id].text : '');
+
+		return { currentChild, currentChildText };
+	}
 
 	function handleInput() {
 		const newText = textareaRef.value;
@@ -85,7 +96,7 @@
 		}
 
 		// Update the text for the current block
-		const currentChild = $blocks[parentID]?.children?.[currentBlockIndex];
+		const { currentChild } = getCurrentChildAndText();
 		if(currentChild){
 			// 1. if block has type/ id, update the block at the store root
 			if(currentChild?.id){
@@ -101,9 +112,7 @@
 	function handleKeyDown(event) {
 		const { key, ctrlKey, metaKey, shiftKey, altKey } = event;
 
-		const currentChild = $blocks[parentID]?.children?.[currentBlockIndex];
-		const currentChildText = currentChild?.text ?? ( currentChild?.id ? $blocks[currentChild.id].text : '')
-
+		const { currentChildText } = getCurrentChildAndText();
 		const charBeforeCaret = currentChildText?.charAt(currentCaret.offset-1);
 
 		if (key === "Enter") {
@@ -154,9 +163,7 @@
 		currentBlockIndex = blockIndex;
 		currentCaret.offset = offset;
 		setTimeout(() => {
-			const currentChild = $blocks[parentID]?.children?.[currentBlockIndex];
-			const currentChildText = currentChild?.text ?? ( currentChild?.id ? $blocks[currentChild.id].text : '')
-
+			const { currentChildText } = getCurrentChildAndText();
 			textareaRef.value = currentChildText ?? '';
 			textareaRef.setSelectionRange(currentCaret.offset, currentCaret.offset);
 			setVirtualCaretPosition();
@@ -174,9 +181,8 @@
 	function moveCursorUp(shiftKey,altKey) {
 		if (currentBlockIndex > 0) {
 			currentBlockIndex--;
-			const currentChild = $blocks[parentID]?.children?.[currentBlockIndex];
-			const currentChildText = currentChild?.text ?? ( currentChild?.id ? $blocks[currentChild.id].text : '')
-			const prevBlockTextLength = currentChildText.length;
+			const { currentChildText } = getCurrentChildAndText();
+			const prevBlockTextLength = currentChildText?.length;
 			const newOffset = Math.min(currentCaret.offset, prevBlockTextLength);
 			setCaretPosition(currentBlockIndex, newOffset);
 		}
@@ -185,9 +191,8 @@
 	function moveCursorDown(shiftKey,altKey) {
 		if (currentBlockIndex < $blocks[parentID].children.length - 1) {
 			currentBlockIndex++;
-			const currentChild = $blocks[parentID]?.children?.[currentBlockIndex];
-			const currentChildText = currentChild?.text ?? ( currentChild?.id ? $blocks[currentChild.id].text : '')
-			const nextBlockTextLength = currentChildText.length;
+			const { currentChildText } = getCurrentChildAndText();
+			const nextBlockTextLength = currentChildText?.length;
 			const newOffset = Math.min(currentCaret.offset, nextBlockTextLength);
 			setCaretPosition(currentBlockIndex, newOffset);
 		}
@@ -225,8 +230,7 @@
  * @param {'left'|'right'} direction - The direction of the cursor movement.
  */
  function moveCursorByWord(direction) {
-		const currentChild = $blocks[parentID]?.children?.[currentBlockIndex];
-		const currentChildText = currentChild?.text ?? ( currentChild?.id ? $blocks[currentChild.id].text : '')
+	const { currentChildText } = getCurrentChildAndText();
 		const slicedText = direction === 'left' ? currentChildText.slice(0, currentCaret.offset) : currentChildText.slice(currentCaret.offset);
 
 		const newCaretOffset = findWordBoundary(slicedText, currentChildText.length, direction);
@@ -252,13 +256,10 @@
 			moveCursorByWord('left');
 		} else {
 			if (currentCaret.offset > 0) {
-				console.log("currentCaret.offset",currentCaret.offset)
 				currentCaret.offset--;
 			} else if (currentBlockIndex > 0) {
 				currentBlockIndex--;
-				const currentChild = $blocks[parentID]?.children?.[currentBlockIndex];
-				const currentChildText = currentChild?.text ?? ( currentChild?.id ? $blocks[currentChild.id].text : '')
-				console.log("currentChildText",currentChildText)
+				const { currentChildText } = getCurrentChildAndText();
 				currentCaret.offset = currentChildText.length;
 			}
 		}
@@ -270,8 +271,7 @@
 		if (altKey) {
 			moveCursorByWord('right');
 		} else {
-			const currentChild = $blocks[parentID]?.children?.[currentBlockIndex];
-			const currentChildText = currentChild?.text ?? ( currentChild?.id ? $blocks[currentChild.id].text : '')
+			const { currentChildText } = getCurrentChildAndText();
 			if (currentCaret.offset < currentChildText.length) {
 				currentCaret.offset++;
 			} else if (currentBlockIndex < $blocks[parentID].children.length - 1) {
@@ -393,8 +393,7 @@
 
 	onMount(()=>{
 		// set initial value
-		const currentChild = $blocks[parentID]?.children?.[currentBlockIndex];
-		const currentChildText = currentChild?.text ?? ( currentChild?.id ? $blocks[currentChild.id].text : '')
+		const { currentChildText } = getCurrentChildAndText();
 		textareaRef.value = currentChildText;
 	})
 </script>
@@ -465,7 +464,7 @@
 
 <style>
 	textarea {
-		/* min-width: 0;
+		min-width: 0;
     min-height: 0;
     margin: 0;
     padding: 0;
@@ -478,7 +477,7 @@
     background-color: transparent;
     z-index: -10;
 		opacity: 0;
-		pointer-events: none; */
+		pointer-events: none;
 	}
 	.editor {
 		min-width: 300px;
