@@ -4,10 +4,22 @@
 	import { blocks } from "$lib/stores/blocks";
 	import Caret from "./Caret.svelte";
 	import Prompt from "./blocks/Prompt.svelte";
+	import { filterUniqueByKey } from "$lib/utils/filterUniqueByKey";
 
 	/** @type {string} */
-	 export let parentID;
-	
+	export let parentID;
+
+	/** @type {Array<Record<string, any>>} */
+	let uniqueChildren = [];
+
+	$: {
+		if ($blocks?.[parentID]?.children) {
+			uniqueChildren = filterUniqueByKey($blocks[parentID].children, 'id');
+		} else {
+			uniqueChildren = [];
+		}
+	}
+
 	// Refs
 	let 
 		/** @type {HTMLTextAreaElement} */		
@@ -399,54 +411,65 @@
 </script>
 
 <div>
-    <textarea
-      bind:this={textareaRef}
-      on:input={handleInput}
-      on:keydown={handleKeyDown}
-    ></textarea>
-    <div 
-			bind:this={editorRef}
-		  class="editor"
-		  contenteditable={false}
-		  on:click={focusTextarea} 
-		  on:touchstart={focusTextarea} 
-		  on:keydown
-		>
-			{#if $blocks?.[parentID]?.children}
-				{#each $blocks[parentID].children as {id, text, annotations}, i}
+	<textarea
+		bind:this={textareaRef}
+		on:input={handleInput}
+		on:keydown={handleKeyDown}
+	></textarea>
+	<div 
+		bind:this={editorRef}
+		class="editor"
+		contenteditable={false}
+		on:click={focusTextarea} 
+		on:touchstart={focusTextarea} 
+		on:keydown
+	>
+		{#if $blocks?.[parentID]?.children}
+			{#each $blocks[parentID].children as {id, text, annotations}, i}
 
-					<div 
-						class="block {id ? 'prompt' : ''}" 
-						class:bold={annotations?.includes('bold')}
-						on:click={handleClick}
-						on:touchstart={handleClick}
-						on:keydown
-						data-block={i}
-						bind:this={blockRefs[i]}
-					>
-						{#if typeof id === 'string' && id !== undefined}
-							<Prompt {id} />
-							<!-- {@html $blocks[id].text} -->
-						{:else}
-							{@html text}
-						{/if}
-						{#if currentBlockIndex === i}<Caret left={currentCaret.x} top={currentCaret.y} height={currentCaret.height} />{/if}
-					</div>
-				{/each}
-			{/if}
-    </div>
-	  <CommandDropdown
-			bind:this={commandDropdownRef}
-			{commands}
-			{editorRef}
-			{currentCaret}
-		/>
-  </div>
+				<div 
+					class="block {id ? 'prompt' : ''}" 
+					class:bold={annotations?.includes('bold')}
+					on:click={handleClick}
+					on:touchstart={handleClick}
+					on:keydown
+					data-block={i}
+					bind:this={blockRefs[i]}
+				>
+					{#if typeof id === 'string' && id !== undefined}
+						<Prompt {id} />
+						<!-- {@html $blocks[id].text} -->
+					{:else}
+						{@html text}
+					{/if}
+					{#if currentBlockIndex === i}<Caret left={currentCaret.x} top={currentCaret.y} height={currentCaret.height} />{/if}
+				</div>
+			{/each}
+		{/if}
+	</div>
+	<CommandDropdown
+		bind:this={commandDropdownRef}
+		{commands}
+		{editorRef}
+		{currentCaret}
+	/>
+</div>
 
+<!-- List all blocks with id -->
+<div>
+  {#each uniqueChildren as child, i}
+		{#if child.id}
+		<details class="child-block-container">
+			<summary role="button" class="secondary">{$blocks[child.id].text}</summary>
+			<svelte:self parentID={child.id} />
+		</details>
+		{/if}
+	{/each}
+</div>
 
 
 <!-- Debugging -->
-<pre>
+<!-- <pre>
 {#each $blocks?.[parentID]?.children || [] as child, i }
 <span style={currentBlockIndex === i ? 'background-color: var(--bg-red);' : ''}>{JSON.stringify(child,null,0)}
 </span>
@@ -455,12 +478,12 @@
 <pre>
 {#each Object.entries($blocks) as [id,block] }
 {@const currentChild = $blocks[parentID]?.children?.[currentBlockIndex]}
-<span style={(currentChild === id) ? 'background-color: var(--bg-red);' : ''}>{JSON.stringify(block,null,0)}
+<span style={(currentChild.id === id) ? 'background-color: var(--bg-red);' : ''}>{JSON.stringify(block,null,0)}
 </span>	
 <br>
 {/each}
 </pre>
-	
+	 -->
 
 <style>
 	textarea {
@@ -510,5 +533,14 @@
 	}
 	pre {
 		font-size: 12px;
+	}
+
+	.child-block-container {
+		background-color: var(--grey-200);
+		margin: var(--size-5);
+		padding: var(--size-2);
+	}
+	:global(.child-block-container .child-block-container){
+		border-left: 4px solid var(--secondary);
 	}
 </style>
