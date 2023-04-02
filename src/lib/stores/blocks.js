@@ -34,35 +34,39 @@ function createBlockStore() {
     set,
 		update,
 
-		/** 
-		 * @param {UUIDv4} parentID] - The parent block where the data should be updated
-		 * @param {number} indexInChildren - The child where the text should be updated
-		 * @param {any} newText - The new text to be added
-		 */ 
-		updateChildText: ( parentID, indexInChildren, newText) => {
-      update(store =>
-        produce(store, draftStore => {
-          if (draftStore?.[parentID]?.children?.[indexInChildren] ) {
-            // @ts-ignore
-            draftStore[parentID].children[indexInChildren].text = newText;
-          }
-        })
-      );
-    },
+		/**
+		 * @param {UUIDv4} parentID - The parent block where the data should be updated
+		 * @param {number} indexInChildren - The child where the property should be updated
+		 * @param {string} property - The property to be updated
+		 * @param {any} value - The new value to be assigned to the property
+		 */
+		updateChildProperty: (parentID, indexInChildren, property, value) => {
+			update(store =>
+				produce(store, draftStore => {
+					if (draftStore?.[parentID]?.children?.[indexInChildren]) {
+						// @ts-ignore
+						draftStore[parentID].children[indexInChildren][property] = value;
+					}
+				})
+			);
+		},
 
-		/** 
-		 * @param {UUIDv4} blockID] - The parent block where the data should be updated
-		 * @param {any} newText - The new text to be added
-		 */ 
-		updateBlockText: ( blockID, newText) => {
-      update(store =>
-        produce(store, draftStore => {
-          if (draftStore[blockID]) {
-            draftStore[blockID].text = newText;
-          }
-        })
-      );
-    },
+
+		/**
+		 * @param {UUIDv4} blockID - The block where the data should be updated
+		 * @param {string} property - The property to be updated
+		 * @param {any} value - The new value to be assigned to the property
+		 */
+		updateBlockProperty: (blockID, property, value) => {
+			update(store =>
+				produce(store, draftStore => {
+					if (draftStore[blockID]) {
+						draftStore[blockID][property] = value;
+					}
+				})
+			);
+		},
+
 
 		/**
 		 * @param {{text: string, id?: string, type?: string}} data - The new block data to be inserted
@@ -136,7 +140,7 @@ function createBlockStore() {
 				if (blockRef) {
 					draftStore[blockID] = data;
 				}
-				
+
 			}))
 
 			if(blockID){

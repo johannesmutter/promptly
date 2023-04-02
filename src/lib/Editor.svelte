@@ -3,10 +3,7 @@
 	import CommandDropdown from "$lib/CommandDropdown.svelte";
 	import { blocks } from "$lib/stores/blocks";
 	import Caret from "./Caret.svelte";
-	import { v4 as uuidv4 } from 'uuid';
 	import Prompt from "./blocks/Prompt.svelte";
-	import { children } from "svelte/internal";
-
 
 	/** @type {string} */
 	 export let parentID;
@@ -72,7 +69,7 @@
 					currentBlockIndex,
 					currentCaret.offset,
 					2
-				)
+				);
 				setCaretPosition(currentBlockIndex + 1, 0);
 				commandDropdownRef?.close()
 			},
@@ -80,16 +77,8 @@
 	];
 	
 
-	// Reactive Statements
-	$: if(currentCaret.offset >= 0) {
-		// setVirtualCaretPosition(); // update caret when offset changes.
-	}
-
-	// functions
-
 	function handleInput() {
 		const newText = textareaRef.value;
-
 		const cursorPosition = textareaRef.selectionStart;
 
 		// Hide the commandDropdown if the double brackets at the current cursor position are deleted
@@ -99,28 +88,13 @@
 
 		// Update the text for the current block
 		if(currentBlockData){
-
-			const currentChildID = currentBlockData?.id;
-			console.log(`
-			newText: ${newText}
-			currentChildID: ${currentChildID}
-			currentBlockData: ${currentBlockData}
-			`
-			)
-			
-
+			const currentChildID = currentBlockData?.id;			
 			// 1. if block has type/ id, update the block at the store root
 			if(currentChildID){
-				blocks.updateBlockText(currentChildID,newText);
-				// $blocks[currentChildID].text = newText
-
+				blocks.updateBlockProperty(currentChildID,'text',newText);
 			} else {
 				// 2. if the block is text only, update the child in [parentID].children[currentBlockIndex]
-				blocks.updateChildText(parentID,currentBlockIndex,newText);
-				// $blocks[parentID].children[currentBlockIndex] = {
-				// 	...currentBlockData,
-				// 	text: newText,
-				// };
+				blocks.updateChildProperty(parentID,currentBlockIndex,'text',newText);
 			}
 		}
 	}
@@ -171,6 +145,10 @@
 		}, 0);
 	}
 
+	/**
+	 * @param {number} blockIndex
+	 * @param {number} offset
+	 */
 	function setCaretPosition(blockIndex, offset) {
 		currentBlockIndex = blockIndex;
 		currentCaret.offset = offset;
@@ -207,44 +185,56 @@
 		}
 	}
 
-	function createWordBoundaryRegex() {
-		return new RegExp(/[\s.,;:?!'"()[\]{}<>|\\/~`@#$%^&*+=_-]/, 'g');
-	}
+	const wordBoundaryRegex = new RegExp(/[\s.,;:?!'"()[\]{}<>|\\/~`@#$%^&*+=_-]/, 'g');
 
-	function findWordBoundary(text, direction) {
-		const wordBoundaryRegex = createWordBoundaryRegex();
+	/**
+	 * Finds the next word boundary position based on the direction.
+	 * @param {string} slicedText - The sliced text based on the current caret position.
+	 * @param {number} textLength - The length of the original text.
+	 * @param {'left'|'right'} direction - The direction of the cursor movement.
+	 * @returns {number|undefined} The new caret offset based on the word boundary.
+	 */
+	function findWordBoundary(slicedText, textLength, direction) {
 
 		if (direction === 'left') {
 			let lastIndex, match;
 
-			// Iterate through the text to find word boundary characters
-			while ((match = wordBoundaryRegex.exec(text)) !== null) {
+			// Iterate through the slicedText to find word boundary characters
+			while ((match = wordBoundaryRegex.exec(slicedText)) !== null) {
 				if (match.index >= currentCaret.offset - 1) break;
 				lastIndex = match.index;
 			}
 
 			return lastIndex ?? 0;
 		} else if (direction === 'right') {
-			const match = wordBoundaryRegex.exec(text);
-			return match ? currentCaret.offset + match.index + 1 : text.length;
+			const match = wordBoundaryRegex.exec(slicedText);
+			return match ? currentCaret.offset + match.index + 1 : textLength;
 		}
 	}
 
-	/** @param {'left'|'right'} direction */
-	function moveCursorByWord(direction) {
+/**
+ * Moves the cursor by a word based on the direction.
+ * @param {'left'|'right'} direction - The direction of the cursor movement.
+ */
+ function moveCursorByWord(direction) {
 		const text = currentBlockText;
 		const slicedText = direction === 'left' ? text.slice(0, currentCaret.offset) : text.slice(currentCaret.offset);
 
-		const newCaretOffset = findWordBoundary(slicedText, direction);
+		const newCaretOffset = findWordBoundary(slicedText, text.length, direction);
 
-		if (direction === 'right' && newCaretOffset === text.length && currentBlockIndex < $blocks[parentID].children.length - 1) {
+		// If moving to the right and reaching the end of the text, go to the next block if there is one
+		if (direction === 'right' && newCaretOffset === text.length && (currentBlockIndex <= $blocks[parentID].children.length - 1)) {
 			currentBlockIndex++;
 			currentCaret.offset = 0;
-		} else if (direction === 'left' && newCaretOffset === 0 && currentBlockIndex > 0) {
+		} 
+		// If moving to the left and reaching the beginning of the text, go to the previous block if there is one
+		else if (direction === 'left' && newCaretOffset === 0 && currentBlockIndex > 0) {
 			currentBlockIndex--;
 			currentCaret.offset = currentBlockText.length;
-		} else {
-			currentCaret.offset = newCaretOffset;
+		} 
+		// Update the caret position based on the new offset
+		else {
+			currentCaret.offset = newCaretOffset
 		}
 	}
 
@@ -296,9 +286,7 @@
 	function setVirtualCaretPosition() {
     const blockNode = blockRefs[currentBlockIndex];
 
-		if (!blockNode) {
-			return
-		}
+		if (!blockNode) return
 			
 		const textNode = blockNode.firstChild;
 
@@ -339,12 +327,9 @@
 		
 		const newX = caretRect.left - rectInlineOffsetLeft;
 		
-		//const lineHeight = currentRect.height;
 		const lineHeight = blockNode.getBoundingClientRect().height / rects.length
 
 		// Set y relative to the editor
-		// const editorRect = editorRef.getBoundingClientRect();
-		//const newY = caretRect.top - editorRect.top + (caretRect.height > 0 ? caretRect.height : 0);
 		const newY = lineHeight * lineIndex
 
 		// update caret
@@ -365,12 +350,11 @@
 			return;
 		}
 
-		const { text, annotations } = currentBlockData;
-		const isBold = annotations?.includes('bold')
-		const newAnnotations = annotations?.length > 0 && annotations.includes('bold') ? 
+		const { annotations } = currentBlockData;
+		const newAnnotations = annotations && annotations?.length > 0 && annotations.includes('bold') ? 
 					annotations.filter(_ => _ !== 'bold') : 
 		[...(annotations || []), 'bold'];
-		currentBlockData.annotations = newAnnotations;
+		blocks.updateChildProperty(parentID,currentBlockIndex,'annotations',newAnnotations)
 	}
 
 	onMount(()=>{
@@ -391,15 +375,17 @@
 		  class="editor"
 		  contenteditable={false}
 		  on:click={focusTextarea} 
+		  on:touchstart={focusTextarea} 
 		  on:keydown
 		>
-			{#if $blocks[parentID]}
+			{#if $blocks?.[parentID]?.children}
 				{#each $blocks[parentID].children as {id, text, annotations}, i}
 
 					<div 
 						class="block {id ? 'prompt' : ''}" 
 						class:bold={annotations?.includes('bold')}
-						on:click={handleClick} 
+						on:click={handleClick}
+						on:touchstart={handleClick}
 						on:keydown
 						data-block={i}
 						bind:this={blockRefs[i]}
@@ -428,13 +414,13 @@
 <!-- Debugging -->
 <pre>
 {#each $blocks?.[parentID]?.children as child, i }
-<span style={currentBlockIndex === i ? 'color: red' : ''}>{JSON.stringify(child,null,0)}
+<span style={currentBlockIndex === i ? 'background-color: var(--bg-red);' : ''}>{JSON.stringify(child,null,0)}
 </span>
 {/each}
 </pre>
 <pre>
 {#each Object.entries($blocks) as [id,block] }
-<span style={(currentBlockData?.id === id) ? 'color: red' : ''}>{JSON.stringify(block,null,0)}
+<span style={(currentBlockData?.id === id) ? 'background-color: var(--bg-red);' : ''}>{JSON.stringify(block,null,0)}
 </span>	
 <br>
 {/each}
