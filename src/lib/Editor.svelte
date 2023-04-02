@@ -21,8 +21,6 @@
 
 	/** @type number */
 	let currentBlockIndex = 0;
-	$: currentBlockData = $blocks?.[parentID]?.children?.[currentBlockIndex]
-	$: currentBlockText = currentBlockData?.text ?? ( currentBlockData?.id ? $blocks[currentBlockData.id].text : '')
 
 	/**
 	 * @typedef {Object} CaretPosition
@@ -87,11 +85,11 @@
 		}
 
 		// Update the text for the current block
-		if(currentBlockData){
-			const currentChildID = currentBlockData?.id;			
+		const currentChild = $blocks[parentID]?.children?.[currentBlockIndex];
+		if(currentChild){
 			// 1. if block has type/ id, update the block at the store root
-			if(currentChildID){
-				blocks.updateBlockProperty(currentChildID,'text',newText);
+			if(currentChild?.id){
+				blocks.updateBlockProperty(currentChild?.id,'text',newText);
 			} else {
 				// 2. if the block is text only, update the child in [parentID].children[currentBlockIndex]
 				blocks.updateChildProperty(parentID,currentBlockIndex,'text',newText);
@@ -103,7 +101,10 @@
 	function handleKeyDown(event) {
 		const { key, ctrlKey, metaKey, shiftKey, altKey } = event;
 
-		const charBeforeCaret = currentBlockText?.charAt(currentCaret.offset-1);
+		const currentChild = $blocks[parentID]?.children?.[currentBlockIndex];
+		const currentChildText = currentChild?.text ?? ( currentChild?.id ? $blocks[currentChild.id].text : '')
+
+		const charBeforeCaret = currentChildText?.charAt(currentCaret.offset-1);
 
 		if (key === "Enter") {
 			event.preventDefault();
@@ -153,7 +154,10 @@
 		currentBlockIndex = blockIndex;
 		currentCaret.offset = offset;
 		setTimeout(() => {
-			textareaRef.value = currentBlockText ?? '';
+			const currentChild = $blocks[parentID]?.children?.[currentBlockIndex];
+			const currentChildText = currentChild?.text ?? ( currentChild?.id ? $blocks[currentChild.id].text : '')
+
+			textareaRef.value = currentChildText ?? '';
 			textareaRef.setSelectionRange(currentCaret.offset, currentCaret.offset);
 			setVirtualCaretPosition();
 			focusTextarea();
@@ -170,7 +174,9 @@
 	function moveCursorUp(shiftKey,altKey) {
 		if (currentBlockIndex > 0) {
 			currentBlockIndex--;
-			const prevBlockTextLength = currentBlockText.length;
+			const currentChild = $blocks[parentID]?.children?.[currentBlockIndex];
+			const currentChildText = currentChild?.text ?? ( currentChild?.id ? $blocks[currentChild.id].text : '')
+			const prevBlockTextLength = currentChildText.length;
 			const newOffset = Math.min(currentCaret.offset, prevBlockTextLength);
 			setCaretPosition(currentBlockIndex, newOffset);
 		}
@@ -179,7 +185,9 @@
 	function moveCursorDown(shiftKey,altKey) {
 		if (currentBlockIndex < $blocks[parentID].children.length - 1) {
 			currentBlockIndex++;
-			const nextBlockTextLength = currentBlockText.length;
+			const currentChild = $blocks[parentID]?.children?.[currentBlockIndex];
+			const currentChildText = currentChild?.text ?? ( currentChild?.id ? $blocks[currentChild.id].text : '')
+			const nextBlockTextLength = currentChildText.length;
 			const newOffset = Math.min(currentCaret.offset, nextBlockTextLength);
 			setCaretPosition(currentBlockIndex, newOffset);
 		}
@@ -217,20 +225,21 @@
  * @param {'left'|'right'} direction - The direction of the cursor movement.
  */
  function moveCursorByWord(direction) {
-		const text = currentBlockText;
-		const slicedText = direction === 'left' ? text.slice(0, currentCaret.offset) : text.slice(currentCaret.offset);
+		const currentChild = $blocks[parentID]?.children?.[currentBlockIndex];
+		const currentChildText = currentChild?.text ?? ( currentChild?.id ? $blocks[currentChild.id].text : '')
+		const slicedText = direction === 'left' ? currentChildText.slice(0, currentCaret.offset) : currentChildText.slice(currentCaret.offset);
 
-		const newCaretOffset = findWordBoundary(slicedText, text.length, direction);
+		const newCaretOffset = findWordBoundary(slicedText, currentChildText.length, direction);
 
 		// If moving to the right and reaching the end of the text, go to the next block if there is one
-		if (direction === 'right' && newCaretOffset === text.length && (currentBlockIndex <= $blocks[parentID].children.length - 1)) {
+		if (direction === 'right' && newCaretOffset === currentChildText.length && (currentBlockIndex <= $blocks[parentID].children.length - 1)) {
 			currentBlockIndex++;
 			currentCaret.offset = 0;
 		} 
 		// If moving to the left and reaching the beginning of the text, go to the previous block if there is one
 		else if (direction === 'left' && newCaretOffset === 0 && currentBlockIndex > 0) {
 			currentBlockIndex--;
-			currentCaret.offset = currentBlockText.length;
+			currentCaret.offset = currentChildText.length;
 		} 
 		// Update the caret position based on the new offset
 		else {
@@ -243,10 +252,14 @@
 			moveCursorByWord('left');
 		} else {
 			if (currentCaret.offset > 0) {
+				console.log("currentCaret.offset",currentCaret.offset)
 				currentCaret.offset--;
 			} else if (currentBlockIndex > 0) {
 				currentBlockIndex--;
-				currentCaret.offset = currentBlockText.length;
+				const currentChild = $blocks[parentID]?.children?.[currentBlockIndex];
+				const currentChildText = currentChild?.text ?? ( currentChild?.id ? $blocks[currentChild.id].text : '')
+				console.log("currentChildText",currentChildText)
+				currentCaret.offset = currentChildText.length;
 			}
 		}
 
@@ -257,7 +270,9 @@
 		if (altKey) {
 			moveCursorByWord('right');
 		} else {
-			if (currentCaret.offset < currentBlockText.length) {
+			const currentChild = $blocks[parentID]?.children?.[currentBlockIndex];
+			const currentChildText = currentChild?.text ?? ( currentChild?.id ? $blocks[currentChild.id].text : '')
+			if (currentCaret.offset < currentChildText.length) {
 				currentCaret.offset++;
 			} else if (currentBlockIndex < $blocks[parentID].children.length - 1) {
 				currentBlockIndex++;
@@ -283,12 +298,30 @@
 		textareaRef.setSelectionRange(currentCaret.offset, currentCaret.offset);
 	}
 
+	/**
+	 * Recursively finds the first text node within the given node.
+	 * @param {Node} node - The starting DOM node to search for a text node.
+	 * @returns {?Text} - The first text node found or null if none found.
+	 */
+	function findFirstTextNode(node) {
+    if (node.nodeType === Node.TEXT_NODE) {
+			return /** @type {Text} */ (node);
+    }
+    for (let child of node.childNodes) {
+        const textNode = findFirstTextNode(child);
+        if (textNode) {
+            return textNode;
+        }
+    }
+    return null;
+	}
+
 	function setVirtualCaretPosition() {
     const blockNode = blockRefs[currentBlockIndex];
 
 		if (!blockNode) return
 			
-		const textNode = blockNode.firstChild;
+    const textNode = findFirstTextNode(blockNode);
 
 		// Create a new Range object, used to represent a range of text in the DOM
 		const range = document.createRange(); 
@@ -345,12 +378,13 @@
 	}
 
 	function toggleBold() {
-		if (!currentBlockData) {
+		const currentChild = $blocks[parentID]?.children?.[currentBlockIndex];
+		if (!currentChild) {
 			console.error(`Error: block ${currentBlockIndex} does not exist`);
 			return;
 		}
 
-		const { annotations } = currentBlockData;
+		const { annotations } = currentChild;
 		const newAnnotations = annotations && annotations?.length > 0 && annotations.includes('bold') ? 
 					annotations.filter(_ => _ !== 'bold') : 
 		[...(annotations || []), 'bold'];
@@ -359,14 +393,15 @@
 
 	onMount(()=>{
 		// set initial value
-		textareaRef.value = currentBlockText;
+		const currentChild = $blocks[parentID]?.children?.[currentBlockIndex];
+		const currentChildText = currentChild?.text ?? ( currentChild?.id ? $blocks[currentChild.id].text : '')
+		textareaRef.value = currentChildText;
 	})
 </script>
 
 <div>
     <textarea
       bind:this={textareaRef}
-      class="hidden-textarea"
       on:input={handleInput}
       on:keydown={handleKeyDown}
     ></textarea>
@@ -391,8 +426,8 @@
 						bind:this={blockRefs[i]}
 					>
 						{#if typeof id === 'string' && id !== undefined}
-							<!-- <Prompt {id} /> -->
-							{@html $blocks[id].text}
+							<Prompt {id} />
+							<!-- {@html $blocks[id].text} -->
 						{:else}
 							{@html text}
 						{/if}
@@ -413,14 +448,15 @@
 
 <!-- Debugging -->
 <pre>
-{#each $blocks?.[parentID]?.children as child, i }
+{#each $blocks?.[parentID]?.children || [] as child, i }
 <span style={currentBlockIndex === i ? 'background-color: var(--bg-red);' : ''}>{JSON.stringify(child,null,0)}
 </span>
 {/each}
 </pre>
 <pre>
 {#each Object.entries($blocks) as [id,block] }
-<span style={(currentBlockData?.id === id) ? 'background-color: var(--bg-red);' : ''}>{JSON.stringify(block,null,0)}
+{@const currentChild = $blocks[parentID]?.children?.[currentBlockIndex]}
+<span style={(currentChild === id) ? 'background-color: var(--bg-red);' : ''}>{JSON.stringify(block,null,0)}
 </span>	
 <br>
 {/each}
@@ -429,7 +465,7 @@
 
 <style>
 	textarea {
-		min-width: 0;
+		/* min-width: 0;
     min-height: 0;
     margin: 0;
     padding: 0;
@@ -442,7 +478,7 @@
     background-color: transparent;
     z-index: -10;
 		opacity: 0;
-		pointer-events: none;
+		pointer-events: none; */
 	}
 	.editor {
 		min-width: 300px;

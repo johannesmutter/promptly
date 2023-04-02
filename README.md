@@ -31,7 +31,7 @@ git clone https://github.com/johannesmutter/promptly.git
 
 Install dependencies:
 ```bash
-cd {repo-name}
+cd promptly
 yarn add
 ```
 
