@@ -195,18 +195,18 @@
 			currentBlockIndex--;
 			const { currentChildText } = getCurrentChildAndText();
 			const prevBlockTextLength = currentChildText?.length;
-			const newOffset = Math.min(currentCaret.offset, prevBlockTextLength);
-			setCaretPosition(currentBlockIndex, newOffset);
+			// const newOffset = Math.min(currentCaret.offset, prevBlockTextLength);
+			setCaretPosition(currentBlockIndex, prevBlockTextLength);
 		}
 	}
 
 	function moveCursorDown(shiftKey,altKey) {
 		if (currentBlockIndex < $blocks[parentID].children.length - 1) {
 			currentBlockIndex++;
-			const { currentChildText } = getCurrentChildAndText();
-			const nextBlockTextLength = currentChildText?.length;
-			const newOffset = Math.min(currentCaret.offset, nextBlockTextLength);
-			setCaretPosition(currentBlockIndex, newOffset);
+			// const { currentChildText } = getCurrentChildAndText();
+			// const nextBlockTextLength = currentChildText?.length;
+			// const newOffset = Math.min(currentCaret.offset, nextBlockTextLength);
+			setCaretPosition(currentBlockIndex, 0);
 		}
 	}
 
@@ -366,16 +366,27 @@
 		}
 		
 		const currentRect = rects[lineIndex];
+
+		const editorRect = editorRef.getBoundingClientRect();
+
+		
 		
 		// rectInlineOffsetLeft calculates the left offset of the first inline element in the current line for accurate virtual caret positioning. It uses the first line's rectangle left position if not on the first line, otherwise the current line's rectangle left position. This accounts for indentation caused by preceding inline blocks.
-		const rectInlineOffsetLeft = lineIndex >= 1 ? rects[0].left : currentRect.left;	
-		
-		const newX = caretRect.left - rectInlineOffsetLeft;
+		// const rectInlineOffsetLeft = lineIndex >= 1 ? rects[0].left : currentRect.left;			
+		// relative to currentBlock
+		// const newX = caretRect.left - rectInlineOffsetLeft;
+
+		// relative to editor
+		const newX = caretRect.left - editorRect.left;
 		
 		const lineHeight = blockNode.getBoundingClientRect().height / rects.length
 
+		// Set y relative to the currentBlock
+		// const newY = lineHeight * lineIndex
+		
 		// Set y relative to the editor
-		const newY = lineHeight * lineIndex
+		const newY = currentRect.top - editorRect.top;
+
 
 		// update caret
 		currentCaret = {
@@ -442,10 +453,11 @@
 					{:else}
 						{@html text}
 					{/if}
-					{#if currentBlockIndex === i}<Caret left={currentCaret.x} top={currentCaret.y} height={currentCaret.height} />{/if}
+					<!-- {#if currentBlockIndex === i}<Caret left={currentCaret.x} top={currentCaret.y} height={currentCaret.height} />{/if} -->
 				</div>
 			{/each}
 		{/if}
+		<Caret left={currentCaret.x} top={currentCaret.y} height={currentCaret.height} />
 	</div>
 	<CommandDropdown
 		bind:this={commandDropdownRef}
@@ -454,6 +466,8 @@
 		{currentCaret}
 	/>
 </div>
+
+<pre>{JSON.stringify(currentCaret,null,2)}</pre>
 
 <!-- List all blocks with id -->
 <div class="referenced-blocks">
