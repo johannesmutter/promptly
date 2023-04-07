@@ -1,15 +1,18 @@
 <script>
-	import { blocks } from "$lib/stores/blocks";
+	import Icon from "$lib/Icon.svelte";
+  import { blocks } from "$lib/stores/blocks";
   export let id = '';
   export let selected = false;
 </script>
 
-<span>
+<q>
   {@html $blocks[id].text}
-</span>
+</q>
+
+<Icon src="message-spiral.svg" color="var(--yellow-dark)" />
 
 <style>
-  span {
+  q {
     background-color: var(--yellow-lightest);
 		color: var(--yellow-dark);
   }

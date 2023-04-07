@@ -1,8 +1,8 @@
 <script>
 	import { afterUpdate, tick, createEventDispatcher } from "svelte";
-	import { clickOutside } from "./clickOutside.js";
-	import { pressEsc } from "./pressEsc.js";	
-	import { pressArrowKeys } from "./pressArrowKeys.js";
+	import { clickOutside } from "$lib/actions/clickOutside.js";
+	import { pressEsc } from "$lib/actions/pressEsc.js";	
+	import { pressArrowKeys } from "$lib/actions/pressArrowKeys.js";
 
 	export let commands = [];
 	export let searchInput = "";
