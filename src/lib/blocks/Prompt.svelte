@@ -5,14 +5,13 @@
   export let selected = false;
 </script>
 
-<q>
-  {@html $blocks[id].text}
-</q>
+<b>{@html $blocks[id].text}</b>
 
 <Icon src="message-spiral.svg" color="var(--yellow-dark)" />
 
 <style>
-  q {
+  b {
+    font-weight: normal;
     background-color: var(--yellow-lightest);
 		color: var(--yellow-dark);
   }

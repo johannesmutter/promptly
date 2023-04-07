@@ -315,21 +315,21 @@
 	}
 
 	/**
-	 * Recursively finds the first text node within the first child node with <q> tag within the given node.
+	 * Recursively finds the first text node within the first child node with <a> tag within the given node.
 	 * @param {Node} node - The starting DOM node to search for a text node.
-	 * @returns {?Text} - The first text node found inside the first child node with <q> tag or null if none found.
+	 * @returns {?Text} - The first text node found inside the first child node with <a> tag or null if none found.
 	 */
-	 function findFirstTextNodeInFirstChildWithQTag(node) {
-		if (node.nodeName === 'Q' && node.firstChild instanceof Text) {
+	 function findFirstTextNodeInFirstChildWithBTag(node) {
+		if (node.nodeName === 'B' && node.firstChild instanceof Text) {
 			return node.firstChild;
 		} else {
 			for (let child of node.childNodes) {
-				if (child.nodeName === 'Q' && child.firstChild instanceof Text) {
+				if (child.nodeName === 'B' && child.firstChild instanceof Text) {
 					return child.firstChild;
 				} else {
-					const firstTextNodeInChildWithQTag = findFirstTextNodeInFirstChildWithQTag(child);
-					if (firstTextNodeInChildWithQTag) {
-						return firstTextNodeInChildWithQTag;
+					const tag = findFirstTextNodeInFirstChildWithBTag(child);
+					if (tag) {
+						return tag;
 					}
 				}
 			}
@@ -342,7 +342,7 @@
 
 		if (!blockNode) return
 			
-    const textNode = findFirstTextNodeInFirstChildWithQTag(blockNode);
+    const textNode = findFirstTextNodeInFirstChildWithBTag(blockNode);
 
 		// Create a new Range object, used to represent a range of text in the DOM
 		const range = document.createRange(); 
@@ -460,7 +460,7 @@
 						<Prompt {id} />
 						<!-- {@html $blocks[id].text} -->
 					{:else}
-						<q>{@html text}</q>
+						<b>{@html text}</b>
 					{/if}
 					<!-- {#if currentBlockIndex === i}<Caret left={currentCaret.x} top={currentCaret.y} height={currentCaret.height} />{/if} -->
 				</div>
@@ -532,6 +532,9 @@
 		padding: 30px;
 		position: relative;
 		cursor: text;
+	}
+	.editor .block > b {
+		font-weight: normal;
 	}
 
 	.block {
