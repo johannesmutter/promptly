@@ -40,7 +40,7 @@ $: {
 	
 <style>
 	.caret {
-		transition: left 100ms ease-in-out, top 100ms ease-in-out;
+		transition: left 60ms ease-in, top 60ms ease-in;
 		width: 2px;
 		height: 100%;
 		background-color: var(--blue-base);

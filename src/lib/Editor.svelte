@@ -210,7 +210,9 @@
 		}
 	}
 
-	const wordBoundaryRegex = new RegExp(/[\s.,;:?!'"()[\]{}<>|\\/~`@#$%^&*+=_-]/, 'g');
+	function createWordBoundaryRegex() { // must be a function that returns a new RegExp when call, can't be a static variable
+		return new RegExp(/[\s.,;:?!'"()[\]{}<>|\\/~`@#$%^&*+=_-]/, 'g');
+	}
 
 	/**
 	 * Finds the next word boundary position based on the direction.
@@ -220,6 +222,8 @@
 	 * @returns {number|undefined} The new caret offset based on the word boundary.
 	 */
 	function findWordBoundary(slicedText, textLength, direction) {
+
+		const wordBoundaryRegex = createWordBoundaryRegex();
 
 		if (direction === 'left') {
 			let lastIndex, match;
