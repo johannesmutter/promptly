@@ -5,9 +5,12 @@
 	import Caret from "./Caret.svelte";
 	import Prompt from "./blocks/Prompt.svelte";
 	import { filterUniqueByKey } from "$lib/utils/filterUniqueByKey";
+	import ToggleButton from "./ToggleButton.svelte";
 
 	/** @type {string} */
 	export let parentID;
+	/** @type {boolean} */
+	export let expanded = false;
 
 	/** @type {Array<Record<string, any>>} */
 	let uniqueChildren = [];
@@ -423,72 +426,89 @@
 		blocks.updateChildProperty(parentID,currentBlockIndex,'annotations',newAnnotations)
 	}
 
+	function expandPrompt() {
+    expanded = !expanded;
+  }
+
+
 	onMount(()=>{
 		// set initial value
 		const { currentChildText } = getCurrentChildAndText();
-		textareaRef.value = currentChildText;
+		if(textareaRef){
+			textareaRef.value = currentChildText;
+		}
 	})
 </script>
 
 <div>
-	<textarea
-		bind:this={textareaRef}
-		on:input={handleInput}
-		on:keydown={handleKeyDown}
-	></textarea>
-	<div 
-		bind:this={editorRef}
-		class="editor"
-		contenteditable={false}
-		on:click={focusTextarea} 
-		on:touchstart={focusTextarea} 
-		on:keydown
-	>
-		{#if $blocks?.[parentID]?.children}
-			{#each $blocks[parentID].children as {id, text, annotations}, i}
+	<!-- HEADER -->
+	<header>
+		<ToggleButton on:toggle={expandPrompt} toggled={expanded} />
+		<p on:click={expandPrompt}>{$blocks[parentID].text}</p>
+	</header>
 
-				<div 
-					class="block {id ? 'prompt' : ''}" 
-					class:bold={annotations?.includes('bold')}
-					on:click={handleClick}
-					on:touchstart={handleClick}
-					on:keydown
-					data-block={i}
-					bind:this={blockRefs[i]}
-				>
-					{#if typeof id === 'string' && id !== undefined}
-						<Prompt {id} />
-						<!-- {@html $blocks[id].text} -->
-					{:else}
-						<b>{@html text}</b>
+	<!-- BODY -->
+	{#if expanded}
+		<main>
+			<textarea
+				bind:this={textareaRef}
+				on:input={handleInput}
+				on:keydown={handleKeyDown}
+			></textarea>
+			<div 
+				bind:this={editorRef}
+				class="editor"
+				contenteditable={false}
+				on:click={focusTextarea} 
+				on:touchstart={focusTextarea} 
+				on:keydown
+			>
+				{#if $blocks?.[parentID]?.children}
+					{#each $blocks[parentID].children as {id, text, annotations}, i}
+
+						<div 
+							class="block {id ? 'prompt' : ''}" 
+							class:bold={annotations?.includes('bold')}
+							on:click={handleClick}
+							on:touchstart={handleClick}
+							on:keydown
+							data-block={i}
+							bind:this={blockRefs[i]}
+						>
+							{#if typeof id === 'string' && id !== undefined}
+								<Prompt {id} />
+								<!-- {@html $blocks[id].text} -->
+							{:else}
+								<b>{@html text}</b>
+							{/if}
+							<!-- {#if currentBlockIndex === i}<Caret left={currentCaret.x} top={currentCaret.y} height={currentCaret.height} />{/if} -->
+						</div>
+					{/each}
+				{/if}
+				<Caret left={currentCaret.x} top={currentCaret.y} height={currentCaret.height} />
+			</div>
+			<CommandDropdown
+				bind:this={commandDropdownRef}
+				{commands}
+				{editorRef}
+				{currentCaret}
+			/>
+
+			<!-- List all blocks with id -->
+			<div class="referenced-blocks">
+				{#each uniqueChildren as child, i}
+					{#if child.id}
+						<div class="child-block-container">
+							<svelte:self parentID={child.id} />
+						</div>
 					{/if}
-					<!-- {#if currentBlockIndex === i}<Caret left={currentCaret.x} top={currentCaret.y} height={currentCaret.height} />{/if} -->
-				</div>
-			{/each}
-		{/if}
-		<Caret left={currentCaret.x} top={currentCaret.y} height={currentCaret.height} />
-	</div>
-	<CommandDropdown
-		bind:this={commandDropdownRef}
-		{commands}
-		{editorRef}
-		{currentCaret}
-	/>
+				{/each}
+			</div>
+
+		</main>
+	{/if}
 </div>
 
-<pre>{JSON.stringify(currentCaret,null,2)}</pre>
-
-<!-- List all blocks with id -->
-<div class="referenced-blocks">
-  {#each uniqueChildren as child, i}
-		{#if child.id}
-		<details class="child-block-container">
-			<summary role="button" class="secondary">{$blocks[child.id].text}</summary>
-			<svelte:self parentID={child.id} />
-		</details>
-		{/if}
-	{/each}
-</div>
 
 
 <!-- Debugging -->
@@ -509,6 +529,21 @@
 	 -->
 
 <style lang="postcss">
+
+	header {
+		display: flex;
+		align-items: center;
+		gap: var(--size-2);
+		> p {
+			margin: 0;
+		}
+	}
+
+	main {
+		margin-left: var(--size-2);
+		border-left: 2px solid var(--grey-200);
+	}
+
 	textarea {
 		min-width: 0;
     min-height: 0;
@@ -526,10 +561,7 @@
 		pointer-events: none;
 	}
 	.editor {
-		min-width: 300px;
-		min-height: 100px;
-		border: 1px solid #ccc;
-		padding: 30px;
+		padding: var(--size-2);
 		position: relative;
 		cursor: text;
 	}
@@ -541,7 +573,7 @@
 		--base-line-height: 1.5;
 		display: inline;
 		position: relative;
-		border: 0.1px solid var(--blue-lightest);
+		/* border: 0.1px solid var(--blue-lightest); */
 		word-break: break-all;
 		word-wrap: break-word; /* break long words */
 		overflow-wrap: break-word;
@@ -562,19 +594,18 @@
 	}
 
 	.referenced-blocks {
-		display: grid;
-		gap: 10px;
-		grid-template-columns: repeat(auto-fill, minmax(50ex, 1fr));
-		grid-template-rows: masonry;
-		align-items: flex-start;
+		display: flex;
+		flex-direction: column;
+		margin: var(--size-2);
+		padding: var(--size-2);
+		background-color: var(--grey-100);
 	}
 
 	.child-block-container {
-		background-color: var(--grey-200);
-		margin: var(--size-3);
-		padding: var(--size-2);
+		/* margin: var(--size-3); */
+		/* padding: var(--size-2); */
 	}
-	:global(.child-block-container .child-block-container){
+	/* :global(.child-block-container .child-block-container){
 		border-left: 4px solid var(--secondary);
-	}
+	} */
 </style>

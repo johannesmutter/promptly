@@ -3,4 +3,12 @@
 	import Editor from "$lib/Editor.svelte";
 </script>
 
-<Editor parentID={$rootBlock} />
+<div>
+	<Editor expanded={true} parentID={$rootBlock} />
+</div>
+
+<style lang="postcss">
+	div {
+		padding: 20px;
+	}
+</style>
