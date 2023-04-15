@@ -30,7 +30,9 @@
 span {
   display: inline-block;
   vertical-align: text-top;
+  align-self: center;
   mask-repeat: no-repeat;
+  mask-size: cover;
   mask-position: center;
   transition: all 200ms cubic-bezier(0.25, 0.46, 0.45, 0.94);
 }

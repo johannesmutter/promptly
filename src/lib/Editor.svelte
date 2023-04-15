@@ -6,6 +6,7 @@
 	import Prompt from "./blocks/Prompt.svelte";
 	import { filterUniqueByKey } from "$lib/utils/filterUniqueByKey";
 	import ToggleButton from "./ToggleButton.svelte";
+	import Icon from "./Icon.svelte";
 
 	/** @type {string} */
 	export let parentID;
@@ -44,6 +45,7 @@
 
 	/**
 	 * @typedef {Object} CaretPosition
+	 * @property {boolean} active - Activate/ Show the Caret
 	 * @property {number} offset - The offset of the caret within the block
 	 * @property {number} x - The x-coordinate of the caret
 	 * @property {number} y - The y-coordinate of the caret
@@ -54,6 +56,7 @@
 	 */
 	/** @type CaretPosition */
 	let currentCaret = {
+		active: false,
 		offset: 0,
 		x: 0,
 		y: 0,
@@ -181,6 +184,7 @@
 	function setCaretPosition(blockIndex, offset) {
 		currentBlockIndex = blockIndex;
 		currentCaret.offset = offset;
+		currentCaret.active = true
 		setTimeout(() => {
 			const { currentChildText } = getCurrentChildAndText();
 			textareaRef.value = currentChildText ?? '';
@@ -306,7 +310,7 @@
 		setCaretPosition(currentBlockIndex, currentCaret.offset);
 	}
 
-	function handleClick(event) {
+	function handleClickOnBlock(event) {
 		const blockIndex = parseInt(event.currentTarget.dataset.block);
 		const range = window.getSelection().getRangeAt(0);
 		const clickedOffset = range.startOffset;
@@ -448,6 +452,9 @@
 	<!-- HEADER -->
 	<header>
 		<ToggleButton on:toggle={expandPrompt} toggled={expanded} />
+		{#if uniqueChildren?.length > 0}
+			<Icon src="message-spiral.svg" color="var(--violet-dark)" />
+		{/if}
 		<p on:click={expandPrompt}>{$blocks[parentID].text}</p>
 	</header>
 
@@ -458,6 +465,7 @@
 				bind:this={textareaRef}
 				on:input={handleInput}
 				on:keydown={handleKeyDown}
+				on:blur={() => (currentCaret.active = false)}
 			></textarea>
 			<div 
 				bind:this={editorRef}
@@ -475,8 +483,8 @@
 							class="block {id ? 'prompt' : ''}" 
 							style:display={blockWidths[i] > (editorClientWidth - 50) ? 'inline' : 'inline-flex'}
 							class:bold={annotations?.includes('bold')}
-							on:click={handleClick}
-							on:touchstart={handleClick}
+							on:click={handleClickOnBlock}
+							on:touchstart={handleClickOnBlock}
 							on:keydown
 							data-block={i}
 							bind:offsetWidth={blockWidths[i]}
@@ -492,7 +500,7 @@
 						</div>
 					{/each}
 				{/if}
-				<Caret left={currentCaret.x} top={currentCaret.y} height={currentCaret.height} />
+				<Caret active={currentCaret.active} left={currentCaret.x} top={currentCaret.y} height={currentCaret.height} />
 			</div>
 			<CommandDropdown
 				bind:this={commandDropdownRef}
@@ -502,24 +510,28 @@
 			/>
 
 			<!-- List all blocks with id -->
-			<div class="referenced-blocks">
-				{#each uniqueChildren as child, i}
-					{#if child.id}
-						<div class="child-block-container">
-							<svelte:self parentID={child.id} />
-						</div>
-					{/if}
-				{/each}
-			</div>
+			{#if uniqueChildren?.length > 0}
+				<div class="referenced-blocks">
+					<p>Linked Blocks</p>
+					{#each uniqueChildren as child, i}
+						{#if child.id}
+							<div class="child-block-container">
+								<svelte:self parentID={child.id} />
+							</div>
+						{/if}
+					{/each}
+				</div>
+			{/if}
 
 		</main>
 	{/if}
 </div>
 
 
-
 <!-- Debugging -->
-<!-- <pre>
+<!-- 
+<pre>{JSON.stringify(currentCaret,null,2)}</pre>
+<pre>
 {#each $blocks?.[parentID]?.children || [] as child, i }
 <span style={currentBlockIndex === i ? 'background-color: var(--bg-red);' : ''}>{JSON.stringify(child,null,0)}
 </span>
@@ -533,7 +545,7 @@
 <br>
 {/each}
 </pre>
-	 -->
+-->
 
 <style lang="postcss">
 
@@ -544,6 +556,10 @@
 		> p {
 			margin: 0;
 			cursor: pointer;
+			color: var(--violet-dark);
+			user-select: none;
+			/* border-bottom: 1px solid var(--violet-dark); */
+			/* background-color: var(--violet-lightest); */
 		}
 	}
 
@@ -569,7 +585,7 @@
 		pointer-events: none;
 	}
 	.editor {
-		padding: var(--size-2);
+		padding: 0 var(--size-2);
 		position: relative;
 		cursor: text;
 	}
@@ -582,7 +598,7 @@
 		display: inline-flex;
 		align-items: baseline;
 		position: relative;
-		/* border: 0.1px solid var(--blue-lightest); */
+		/* border: 0.1px solid var(--violet-lightest); */
 		word-break: break-all;
 		word-wrap: break-word; /* break long words */
 		overflow-wrap: break-word;
@@ -599,7 +615,7 @@
 	.block.prompt {
 		border-radius: 1000px;
 		padding: 1px var(--size-1);
-		background-color: var(--yellow-lightest);
+		background-color: var(--violet-lightest);
 	}
 	pre {
 		font-size: 12px;
@@ -609,8 +625,14 @@
 		display: flex;
 		flex-direction: column;
 		margin: var(--size-2);
-		padding: var(--size-2);
-		background-color: var(--grey-100);
+		padding: var(--size-1);
+		> p {
+			color: var(--grey-400);
+			text-transform: uppercase;
+			letter-spacing: 0.05em;
+			font-size: 0.7em;
+		}
+		/* background-color: var(--grey-100); */
 	}
 
 	.child-block-container {

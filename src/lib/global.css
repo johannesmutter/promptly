@@ -151,6 +151,10 @@
 
   --primary: var(--blue-base);
   --primary-hover: var(--blue-dark);
+
+  /* PICOSSS OVERRIDES */
+
+  --typography-spacing-vertical: 0;
 }
 
 /* Text alignment classes */
@@ -169,3 +173,4 @@
 .text-justify {
   text-align: justify;
 }
+
