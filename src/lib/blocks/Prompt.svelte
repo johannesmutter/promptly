@@ -3,16 +3,15 @@
   import { blocks } from "$lib/stores/blocks";
   export let id = '';
   export let selected = false;
+  console.log("updated")
 </script>
 
-<b>{@html $blocks[id].text}</b>
-
 <Icon src="message-spiral.svg" color="var(--yellow-dark)" />
+<b>{@html $blocks[id].text}</b>
 
 <style>
   b {
     font-weight: normal;
-    background-color: var(--yellow-lightest);
 		color: var(--yellow-dark);
   }
 </style>

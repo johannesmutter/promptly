@@ -29,10 +29,14 @@
 		textareaRef, 
 		/** @type {HTMLDivElement} */
 		editorRef, 
+		/** @type {number} */
+		editorClientWidth,
 		/** @type {CommandDropdown|null} */
 		commandDropdownRef, 
 		/** @type {HTMLElement[]} */
-		blockRefs = [];
+		blockRefs = [],
+		/** @type {number[]} */
+		blockWidths = [];
 
 	/** @type number */
 	let currentBlockIndex = 0;
@@ -457,6 +461,7 @@
 			></textarea>
 			<div 
 				bind:this={editorRef}
+				bind:clientWidth={editorClientWidth}
 				class="editor"
 				contenteditable={false}
 				on:click={focusTextarea} 
@@ -468,11 +473,13 @@
 
 						<div 
 							class="block {id ? 'prompt' : ''}" 
+							style:display={blockWidths[i] > (editorClientWidth - 50) ? 'inline' : 'inline-flex'}
 							class:bold={annotations?.includes('bold')}
 							on:click={handleClick}
 							on:touchstart={handleClick}
 							on:keydown
 							data-block={i}
+							bind:offsetWidth={blockWidths[i]}
 							bind:this={blockRefs[i]}
 						>
 							{#if typeof id === 'string' && id !== undefined}
@@ -536,6 +543,7 @@
 		gap: var(--size-2);
 		> p {
 			margin: 0;
+			cursor: pointer;
 		}
 	}
 
@@ -571,7 +579,8 @@
 
 	.block {
 		--base-line-height: 1.5;
-		display: inline;
+		display: inline-flex;
+		align-items: baseline;
 		position: relative;
 		/* border: 0.1px solid var(--blue-lightest); */
 		word-break: break-all;
@@ -580,6 +589,7 @@
 		hyphens: auto;
 		white-space: pre-wrap;
 		line-height: var(--base-line-height);
+		margin: 0;
 		padding-top: calc((var(--base-line-height) - 1) * 0.31em);
 		padding-bottom: calc((var(--base-line-height) - 1) * 0.3em);
 	}
@@ -587,6 +597,8 @@
 		font-weight: 700;
 	}
 	.block.prompt {
+		border-radius: 1000px;
+		padding: 1px var(--size-1);
 		background-color: var(--yellow-lightest);
 	}
 	pre {
