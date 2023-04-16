@@ -5,6 +5,18 @@
 	// import { supabaseClient } from '$lib/supabase';
 	import type { PageData } from './$types';
 	export let data: PageData;
+	import { onMount } from 'svelte';
+	import Icon from '$lib/Icon.svelte'
+
+	import { supabase } from "$lib/supabaseClient";
+	let userid =data.session.user.id;
+
+
+	let blockslist=[]
+	export async function load() {
+  const { data } = await supabase.from("prompts").select();
+  return data
+}
 
 
 	const submitLogout: SubmitFunction = async (event) => {
@@ -17,7 +29,25 @@
 		// }
 		// cancel();
 	};
+
+	export async function savePrompt(user){
+
+		const { data, error } = await supabase
+  .from('prompts')
+  .upsert({ user_id: user, prompt: $blocks?.[$rootBlock], id: $rootBlock})
+	}
+
+	
+	onMount(async () => {
+		blockslist = await load()
+  console.log(blockslist)
+})
+
 </script>
+
+
+
+
 
 <header>
 	{#if data.session}
@@ -25,14 +55,37 @@
 			<button type="submit">Logout</button>
 		</form>
 	{:else}
+	
 		<a href="/otlogin" >login</a>
+
+		
 	{/if}			
 </header>
 
 
 <div>
 	{#if data.session}
-		<Editor expanded={true} parentID={$rootBlock} />
+
+
+<section>
+	{#each blockslist as b}
+
+<div>
+	
+	<p><Icon src="message-spiral.svg" color="var(--violet-dark)" /> {b.prompt.text}</p>
+	
+</div>
+	
+	{/each}
+</section>
+	<Editor expanded={true} parentID={$rootBlock} />
+	<button on:click={() => savePrompt(userid)}>Save Prompt</button>
+
+		
+	{:else}
+
+	<Editor expanded={true} parentID={$rootBlock} />
+	
 	{/if}
 </div>
 
