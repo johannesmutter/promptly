@@ -1,10 +1,10 @@
-# Promptly
+# Promptly - Master Prompt Design
 
-Craft your next prompt in Promptly. 
+*Craft your next intricate prompt using Promptly.*
 
 Promptly is a prompt management platform for prompt-based generative AI platforms. It provides a range of features to help users manage their prompts easily. Promptly offers a prompt archive, conversational search, prompt gallery, and prompt design interface. 
 
-The Promptly Designer splits prompts into blocks to overcome token limits. Chain blocks to build workflows and explore them in different views (Promptly Pro). 
+The Promptly Designer divides prompts into blocks to bypass token restrictions. Construct workflows by connecting prompts and effortlessly explore them using diverse views (Promptly Pro).
 
 ## Features
 
