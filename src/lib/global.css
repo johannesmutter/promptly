@@ -173,3 +173,9 @@
   text-align: justify;
 }
 
+p.caps {
+  color: var(--grey-400);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-size: 0.7em;
+}

@@ -512,7 +512,7 @@
 			<!-- List all blocks with id -->
 			{#if uniqueChildren?.length > 0}
 				<div class="referenced-blocks">
-					<p>Linked Blocks</p>
+					<p class="caps">Linked Blocks</p>
 					{#each uniqueChildren as child, i}
 						{#if child.id}
 							<div class="child-block-container">
@@ -626,12 +626,6 @@
 		flex-direction: column;
 		margin: var(--size-2);
 		padding: var(--size-1);
-		> p {
-			color: var(--grey-400);
-			text-transform: uppercase;
-			letter-spacing: 0.05em;
-			font-size: 0.7em;
-		}
 		/* background-color: var(--grey-100); */
 	}
 

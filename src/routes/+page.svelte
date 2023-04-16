@@ -58,20 +58,35 @@
 <main>
 	<!-- SIDEBAR -->
 	<aside>
-		<nav>
+		<header>
+			{#if data.session}
+				<button class="primary" on:click={() => savePrompt(userID)}>
+					<Icon src="upload-cloud.svg" color="var(--violet-dark)" />
+					<span>Save to Cloud</span>
+				</button>
+			{/if}
 			<button class="primary">
 				<Icon src="plus.svg" color="var(--violet-dark)" />
 				<span>New Prompt</span>
 			</button>
+		</header>
+		
+		<nav>
+			<p class="caps">Prompts:</p>
 			{#each Object.entries($blocks).sort((a, b) => new Date(b[1].createdAt) - new Date(a[1].createdAt)) as [uuid, block], i}
 				<button on:click={()=>{blocks.selectSingleBlock(uuid)}} class:selected={block.selected}>
-					<Icon src="message-spiral.svg" color="var(--violet-dark)" />
+
+					{#if block?.children?.length > 1}
+						<Icon src="message-spiral.svg" color="var(--violet-dark)" />
+					{/if}
 					<span>{block.text}</span>
 				</button>
 			{/each}
 		</nav>
 
-		<div class="account">
+
+
+		<footer>
 			{#if data.session}
 				<form action="/logout" method="POST" use:enhance={submitLogout}>
 					<button type="submit">Logout</button>
@@ -79,7 +94,7 @@
 			{:else}
 				<a href="/otlogin">login</a>
 			{/if}
-		</div>		
+		</footer>		
 	</aside>
 
 	<!-- EDITOR -->
@@ -87,26 +102,16 @@
 		{#if $selectedBlockIDs[0]}
 			<Editor expanded={true} parentID={$selectedBlockIDs[0]} />
 		{/if}
-
-		{#if data.session}
-			<button on:click={() => savePrompt(userID)}>Save Prompt</button>
-		{/if}
 	</section>
 </main>
 
 
-<style lang="postcss">
-	.account {
-		display: flex;		
-		flex-direction: column;
-		& button {
-			margin: 0;
-			padding: var(--size-1)
-		}
-	}
+<style lang="postcss">	
 	main {
-		display: flex;
+		display: grid;
+		grid-template-columns: 260px auto;
 		gap: var(--size-3);
+		min-height: 100vh;
 	}
 	section {
 		padding: var(--size-3);
@@ -114,36 +119,45 @@
 	aside {
 		display: flex;
 		flex-direction: column;
-		justify-content: space-between;
+		justify-content: flex-start;
 		gap: var(--size-1);
 		padding: var(--size-1);
-		width: var(--size-60);
 		background-color: var(--grey-100);
 		border-top-right-radius: var(--border-radius);
 		border-bottom-right-radius: var(--border-radius);
-		& nav {
+		& nav, header, footer {
 			display: flex;
 			flex-direction: column;
 			gap: var(--size-1);
+		}
+		& header {
+			margin-bottom: var(--size-6);
+		}
+		& footer {
+			margin-top: auto;
+		}
+		& button {
+			margin: 0;
+			padding: var(--size-1);
+			text-align: left;
+			display: flex;
+			gap: var(--size-2)
 		}
 		& nav > button {
 			background-color: transparent;
 			text-align: left;
 			padding: var(--size-1) var(--size-2);
 			color: var(--gey-800);
-			border: none;
+			border: 1px solid transparent;
 			margin: 0;
 			white-space: nowrap;
 			position: relative;
 			overflow: hidden;
 			transition: all 200ms ease-in-out 0s;
-			&.primary {
-				outline: 1px solid var(--grey-400)	;
-				outline-offset: -4px;
-				padding: var(--size-2) var(--size-2);
-			}
 			&.selected {
-				background-color: var(--violet-light);
+				background-color: var(--violet-lightest);
+				color: var(--violet-base);
+				border-color: var(--violet-base);
 			}
 			& span {
 				width: calc(100% - 30px);
