@@ -9,7 +9,7 @@ export const actions: Actions = {
 		const { data, error: err } = await locals.sb.auth.signInWithOtp({
 			email: body.email as string,
 			options: {
-				emailRedirectTo: 'https://askbria.fyi/chatbot',
+				emailRedirectTo: 'http://127.0.0.1:5173/',
 			  },		})
 
 		if (err) {
@@ -23,6 +23,6 @@ export const actions: Actions = {
 			})
 		}
 
-		throw redirect(303, "/checkemail")
+		throw redirect(303, "/")
 	},
 }
