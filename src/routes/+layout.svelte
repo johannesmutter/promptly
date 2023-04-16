@@ -1,25 +1,29 @@
 <script lang="ts">
 	import '@picocss/pico'
 	import '$lib/global.css';
-	import { invalidateAll } from '$app/navigation';
-	import { supabaseClient } from '$lib/supabase';
+
+	import { invalidate } from '$app/navigation';
 	import { onMount } from 'svelte';
-	//import '../app.postcss';
-	//import '../app.css';
+	import type { LayoutData } from './$types'
+
+	export let data: LayoutData
+
+	$: ({ supabase, session } = data)
 
 	onMount(() => {
-		const {
-			data: { subscription }
-		} = supabaseClient.auth.onAuthStateChange(() => {
-			console.log('Auth state change detected');
-			invalidateAll();
-		});
+		const { data } = supabase.auth.onAuthStateChange((event, _session) => {
+			if (_session?.expires_at !== session?.expires_at) {
+				invalidate('supabase:auth')
+			}
+		})
 
-		return () => {
-			subscription.unsubscribe();
-		};
-	});
+		return () => data.subscription.unsubscribe()
+	})
+
 </script>
 
+<svelte:head>
+	<title>Promptly</title>
+</svelte:head>
 
 <slot />

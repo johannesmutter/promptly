@@ -4,7 +4,7 @@ const postcssNormalize = require('postcss-normalize')
 const postcssPresetEnv = require('postcss-preset-env');
 const cssnano = require('cssnano');
 const postcssImport = require("postcss-import");
-const colorFunction = require("postcss-color-function")
+// const colorFunction = require("postcss-color-function")
 const flexbugs = require('postcss-flexbugs-fixes');
 const easingGadients = require('postcss-easing-gradients');
 // const colorguard = require('colorguard');
@@ -21,7 +21,7 @@ const config = {
 		// Normalize CSS
 		postcssNormalize,
 
-		colorFunction,
+		// colorFunction,
 
 		easingGadients,
 
@@ -37,11 +37,11 @@ const config = {
 
 		// minimize css
 		// @CSS BUGs: in case of unexpected CSS behaviour disable this.
-		cssnano({
-			preset: ['default', {
-				discardComments: { removeAll: true },
-			}]
-		}),
+		// cssnano({
+		// 	preset: ['default', {
+		// 		discardComments: { removeAll: true },
+		// 	}]
+		// }),
 	]
 };
 
