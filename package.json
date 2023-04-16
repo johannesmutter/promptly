@@ -43,6 +43,7 @@
 		"@supabase/auth-helpers-svelte": "^0.4.6",
 		"@supabase/auth-helpers-sveltekit": "^0.9.3",
 		"@supabase/supabase-js": "^2.20.0",
+		"@types/uuid": "^9.0.1",
 		"immer": "^9.0.21",
 		"install": "^0.13.0",
 		"npm": "^9.6.4",

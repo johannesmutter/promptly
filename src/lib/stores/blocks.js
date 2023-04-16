@@ -1,4 +1,4 @@
-import { writable } from 'svelte/store';
+import { writable, derived } from 'svelte/store';
 import { v4 as uuidv4 } from 'uuid';
 import { uuidValidateV4 } from "$lib/utils/uuidValidateV4";
 import { sampleData } from '$lib/stores/blocksSampleData';
@@ -11,18 +11,19 @@ import produce from "immer";
  */
 
 /**
- * @typedef {Object} Block
- * @property {string} [type] - The type of the block
- * @property {string} text - The text content of the block
- * @property {string[]} [annotations] - The annotations applied to the block
- * @property {({text?: string, id?: string, annotations?: string[]})[]} [children] - The child blocks of the block
+ * A string representing a datetime in ISO 8601 format.
+ * @typedef {string} DatetimeString
  */
 
 /**
- * @typedef {Record<UUIDv4, Block>} BlockStore
+ * @typedef {Object} Block
+ * @property {string} [type] - The type of the block
+ * @property {string} text - The text content of the block
+ * @property {DatetimeString} createdAt - The datetime the block has been last updated
+ * @property {boolean} [selected] - The block is selected in the UI
+ * @property {string[]} [annotations] - The annotations applied to the block
+ * @property {({text?: string, id?: string, annotations?: string[]})[]} [children] - The child blocks of the block
  */
-
-export const rootBlock = writable("cdfd5205-aade-4847-8789-487e41d7ff3f")
 
 
 function createBlockStore() {
@@ -67,9 +68,42 @@ function createBlockStore() {
 			);
 		},
 
+		/**
+		 * Marks a block as selected or unselected
+		 * @param {UUIDv4} blockID - The ID of the block to toggle selection state
+		 */
+		toggleBlockSelection: (blockID) => {
+			update(store =>
+				produce(store, draftStore => {
+					if (draftStore[blockID]) {
+						if(draftStore[blockID]["selected"]){
+							draftStore[blockID]["selected"] = false;
+						} else {
+							draftStore[blockID]["selected"] = true;
+						}
+					}
+				})
+			);
+		},
 
 		/**
-		 * @param {{text: string, id?: string, type?: string}} data - The new block data to be inserted
+		 * Marks a block as selected and unselects the other blocks.
+		 * @param {UUIDv4} blockID - The ID of the block to mark as selected
+		 */
+		selectSingleBlock: (blockID) => {
+			update(store =>
+				produce(store, draftStore => {
+					Object.keys(draftStore).forEach((key) => {
+						draftStore[key].selected = key === blockID;
+					});
+				})
+			);
+		},
+		
+
+
+		/**
+		 * @param {{text: string, id?: string, type?: string, createdAt?: DatetimeString}} data - The new block data to be inserted
 		 * @param {UUIDv4} [parentID] - The parent block where the data should be inserted
 		 * @param {number} [indexInChildren] - The position in children where the data should be inserted
 		 * @param {number} [caretOffset] - The caret offset in a child's text property, after which the data should be inserted
@@ -85,6 +119,10 @@ function createBlockStore() {
 			if(data?.type){
 				blockID = uuidv4();
 				blockRef = {id: blockID};
+
+				// add date to block
+				const now = new Date();
+				data.createdAt = now.toISOString(); // Save as ISO 8601
 			}
 
 			update(store => produce(store, draftStore => {
@@ -152,3 +190,13 @@ function createBlockStore() {
 }
 
 export const blocks = createBlockStore();
+
+
+/**
+ * A derived store that contains an array of IDs of selected blocks.
+ * @type {import('svelte/store').Readable<UUIDv4[]>}
+ */
+export const selectedBlockIDs = derived(blocks, ($blocks) =>
+  Object.keys($blocks).filter((key) => $blocks[key].selected)
+);
+

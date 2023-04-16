@@ -149,11 +149,10 @@
   --text-yellow: var(--yellow-dark);
   --bg-yellow: var(--yellow-lightest);
 
-  --primary: var(--blue-base);
-  --primary-hover: var(--blue-dark);
 
   /* PICOSSS OVERRIDES */
-
+  --primary: var(--violet-base) !important;
+  --primary-hover: var(--violet-dark) !important;
   --typography-spacing-vertical: 0;
 }
 
