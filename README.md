@@ -6,6 +6,9 @@ Promptly is a prompt management platform for prompt-based generative AI platform
 
 The Promptly Designer divides prompts into blocks to bypass token restrictions. Construct workflows by connecting prompts and effortlessly explore them using diverse views (Promptly Pro).
 
+## Demo
+[DEMO](https://promptly-app.vercel.app/)
+
 ## Features
 
 - 🎨 **Prompt Design Interface**: The prompt design interface provides users with a simple and intuitive interface to create new prompts.
