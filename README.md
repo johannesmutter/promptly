@@ -1,6 +1,10 @@
 # Promptly
 
-Promptly is a prompt management platform for prompt-based generative AI platforms. It provides a range of features to help users manage their prompts easily. Promptly offers a prompt archive, conversational search, prompt gallery, and prompt design interface. The platform is built using SvelteKit and GPT3.5 by OpenAI.
+Craft your next prompt in Promptly. 
+
+Promptly is a prompt management platform for prompt-based generative AI platforms. It provides a range of features to help users manage their prompts easily. Promptly offers a prompt archive, conversational search, prompt gallery, and prompt design interface. 
+
+The Promptly Designer splits prompts into blocks to overcome token limits. Chain blocks to build workflows and explore them in different views (Promptly Pro). 
 
 ## Features
 
@@ -32,7 +36,7 @@ git clone https://github.com/johannesmutter/promptly.git
 Install dependencies:
 ```bash
 cd promptly
-yarn add
+yarn install
 ```
 
 Start the development server:

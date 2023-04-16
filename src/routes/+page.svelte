@@ -61,12 +61,12 @@
 		<header>
 			{#if data.session}
 				<button class="primary" on:click={() => savePrompt(userID)}>
-					<Icon src="upload-cloud.svg" color="var(--violet-dark)" />
+					<Icon src="upload-cloud.svg" color="var(--violet-lightest)" />
 					<span>Save to Cloud</span>
 				</button>
 			{/if}
 			<button class="primary">
-				<Icon src="plus.svg" color="var(--violet-dark)" />
+				<Icon src="plus.svg" color="var(--violet-lightest)" />
 				<span>New Prompt</span>
 			</button>
 		</header>
