@@ -9,7 +9,7 @@ The Promptly Designer divides prompts into blocks to bypass token restrictions. 
 ## Demo
 🪄 **[Try the Promptly Platform](https://promptly-app.vercel.app/)**
 
-![Screenshot of Prompty Platform](./preview.png)
+[![Screenshot of Prompty Platform](./preview.png)](https://promptly-app.vercel.app/)
 
 ## Features
 
