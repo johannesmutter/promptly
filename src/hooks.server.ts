@@ -2,13 +2,12 @@
 import { createSupabaseServerClient } from '@supabase/auth-helpers-sveltekit';
 import type { Handle } from '@sveltejs/kit';
 
-const PUBLIC_SUPABASE_URL = import.meta.env.VITE_SUPBABASE_URL
-const PUBLIC_SUPABASE_ANON_KEY = import.meta.env.VITE_SUPBABASE_ANON
+const { VITE_SUPBABASE_URL: supabaseUrl, VITE_SUPBABASE_ANON: supabaseKey } = import.meta.env;
 
 export const handle: Handle = async ({ event, resolve }) => {
   event.locals.supabase = createSupabaseServerClient({
-    supabaseUrl: PUBLIC_SUPABASE_URL,
-    supabaseKey: PUBLIC_SUPABASE_ANON_KEY,
+    supabaseUrl,
+    supabaseKey,
     event
   });
 
