@@ -12,7 +12,7 @@ export const actions: Actions = {
 		const { data, error: err } = await locals.supabase.auth.signInWithOtp({
 			email: body.email as string,
 			options: {
-				emailRedirectTo: 'http://127.0.0.1:5173/',
+				emailRedirectTo: 'https://promptly-app.vercel.app/',
 			  },
 		})
 
