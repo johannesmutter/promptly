@@ -101,8 +101,9 @@
 		</nav>
 
 		<footer>
-			<a class="button" href="mailto:promptly@mutter.co">Give us Feedback</a>
+			<a class="button" href="mailto:promptly@mutter.co">⭐️ Give us Feedback</a>
 			{#if data.session}
+				<p style="padding: 10px 0;"><small>Signed in as: {data?.session?.user.email}</small></p>
 				<form action="/logout" method="POST" use:enhance={submitLogout}>
 					<button type="submit">Logout</button>
 				</form>
