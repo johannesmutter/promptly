@@ -123,6 +123,7 @@
 
 	<!-- EDITOR -->
 	<section>
+		<p class="caps note">NOTE: Write <code>[[</code> to add a new block</p>
 		{#if $selectedBlockIDs[0]}
 			<Editor expanded={true} parentID={$selectedBlockIDs[0]} />
 		{/if}
@@ -181,5 +182,9 @@
 
 		& nav > button {
 		}
+	}
+
+	.note {
+		margin-bottom: var(--size-4);
 	}
 </style>

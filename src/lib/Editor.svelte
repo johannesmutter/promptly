@@ -69,18 +69,11 @@
 	/**
 	 * @typedef {Object} Command
 	 * @property {string} name - The name of the command
+	 * @property {string} [info] - The description of the command
 	 * @property {Function} action - The function to execute when the command is selected
 	 */
 	/** @type Command[] */
 	const commands = [
-		{
-			name: "Text",
-			action: () => { console.log("text action") },
-		},
-		{
-			name: "Code",
-			action: () => { console.log("code action") },
-		},
 		{			
 			name: "Prompt",
 			action: () => {
@@ -94,6 +87,11 @@
 				setCaretPosition(currentBlockIndex + 1, 0);
 				commandDropdownRef?.close()
 			},
+		},
+		{
+			name: "Code",
+			info: "Coming soon",
+			action: () => { console.log("coming soon :)") },
 		},
 	];
 	

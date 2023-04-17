@@ -17,8 +17,8 @@
 	/** @type {HTMLDivElement} */
 	let dropdownRef;
 	let selectedCommandIndex = 0;
-	let width = 150;
-	let height = 200;
+	let width = 200;
+	let height = 150;
 	let x = 0;
 	let y = 0;
 
@@ -112,17 +112,21 @@
     on:keydown={handleEnter}
     tabindex="-1"
 >
-    <input class="search-input" type="text" bind:value={searchInput} placeholder="Search..." />
-    {#each commands as command, i}
-        <button
-          class="command {i === selectedCommandIndex ? 'selected' : ''}"
-					on:click={() => handleCommandClick(command)}
-					on:mouseover={()=> selectedCommandIndex = i}
-					on:focus={()=> selectedCommandIndex = i}
-        >
-            {command.name}
-        </button>
-    {/each}
+	<p class="caps">Insert Block</p>
+	<!-- <input class="search-input" type="text" bind:value={searchInput} placeholder="Search..." /> -->
+	{#each commands as command, i}
+			<button
+				class="command {i === selectedCommandIndex ? 'selected' : ''}"
+				on:click={() => handleCommandClick(command)}
+				on:mouseover={()=> selectedCommandIndex = i}
+				on:focus={()=> selectedCommandIndex = i}
+			>
+					<span>{command.name}</span>
+					{#if command.info}
+						<span class="info">{command.info}</span>
+					{/if}
+			</button>
+	{/each}
 </div>
 
 <style>
@@ -150,10 +154,14 @@
 		padding: 4px 8px;
 		cursor: pointer;
 	}
+	.command .info {
+		color: var(--grey-400);
+		font-size: 0.8em;
+	}
 
 	.command.selected,
 	.command:hover {
-		background-color: rgba(0, 0, 0, 0.05);
+		background-color: var(--grey-100);
 	}
 
 
