@@ -85,7 +85,7 @@
 			name: "Prompt",
 			action: () => {
 				blocks.insertBlock(
-					{text: 'Untitled Prompt', type: 'prompt'},
+					{text: 'Untitled Prompt', type: 'prompt', children: [{text: "empty block"}]},
 					parentID,
 					currentBlockIndex,
 					currentCaret.offset,

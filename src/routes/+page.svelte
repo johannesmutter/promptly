@@ -18,10 +18,11 @@
 	let blocksFromDB = [];
 
 	export async function load() {
+		
 		const { data } = await supabase
 			.from('prompts')
 			.select()
-			.or(`user_id.eq.${userID},user_id.eq.${publicUserID}`);
+			.or(`${userID ? `user_id.eq.${userID},` : ''}user_id.eq.${publicUserID}`);
 		return data;
 	}
 
@@ -73,6 +74,7 @@
 <main>
 	<!-- SIDEBAR -->
 	<aside>
+
 		<header>
 			{#if data.session}
 				<button class="primary" on:click={() => savePrompt(userID)}>
@@ -98,15 +100,14 @@
 			{/each}
 		</nav>
 
-
-
 		<footer>
+			<a class="button" href="mailto:promptly@mutter.co">Give us Feedback</a>
 			{#if data.session}
 				<form action="/logout" method="POST" use:enhance={submitLogout}>
 					<button type="submit">Logout</button>
 				</form>
 			{:else}
-				<a href="/otlogin">login</a>
+				<a class="button" href="/otlogin">Sign Up / Login</a>
 			{/if}
 		</footer>		
 	</aside>
@@ -150,13 +151,18 @@
 		& footer {
 			margin-top: auto;
 		}
-		& button {
+		& button, .button {
+			font-size: 1rem;
+			background-color: var(--primary);
+			color: #FFF;
+			border-radius: var(--border-radius);
 			margin: 0;
 			padding: var(--size-1);
 			text-align: left;
 			display: flex;
 			align-items: center;
 			gap: var(--size-2);
+			text-decoration: none;
 		}
 
 		& nav > button {
