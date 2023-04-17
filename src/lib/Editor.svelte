@@ -506,7 +506,7 @@ function stitchTextAndSaveToClipboard(jsonData, id) {
 		<p on:click={expandPrompt}>{$blocks[parentID].text}</p>
 
 		<a class="hover-only" on:click={()=>stitchTextAndSaveToClipboard($blocks,parentID )}>
-			<Icon src="copy.svg" color="var(--violet-dark)" width={24} height={24} class="icon" />
+			<Icon src="copy.svg" color="var(--grey-400)" width={24} height={24} class="icon" />
 			<span class="hover-text">Copy to Clipboard</span>
 		  </a>
 		  
@@ -624,7 +624,7 @@ function stitchTextAndSaveToClipboard(jsonData, id) {
 	}
 
 	main {
-		margin-left: var(--size-2);
+		margin-left: calc( var(--size-2) - 1px);
 		border-left: 2px solid var(--grey-200);
 	}
 
@@ -696,22 +696,29 @@ function stitchTextAndSaveToClipboard(jsonData, id) {
 	/* :global(.child-block-container .child-block-container){
 		border-left: 4px solid var(--secondary);
 	} */
+
+	.hover-only {
+		text-decoration: none !important;
+		cursor: pointer;
+	}
 	.hover-only .hover-text {
-  visibility: hidden;
-  opacity: 0;
-  transition: opacity 0.3s, visibility 0.3s;
-}
+		user-select: none;
+		visibility: hidden;
+		opacity: 0;
+		transition: opacity 0.3s, visibility 0.3s;
+		color: var(--grey-400);
+	}
 
-.hover-only:hover .hover-text {
-  visibility: visible;
-  opacity: 1;
-}
+	.hover-only:hover .hover-text {
+		visibility: visible;
+		opacity: 1;
+	}
 
-.icon {
-  transition: opacity 0.3s;
-}
+	.icon {
+		transition: opacity 0.3s;
+	}
 
-.hover-only:hover .icon {
-  opacity: 0.6;
-}
+	.hover-only:hover .icon {
+		opacity: 0.6;
+	}
 </style>
