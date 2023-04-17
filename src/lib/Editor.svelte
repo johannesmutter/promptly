@@ -505,9 +505,14 @@ function stitchTextAndSaveToClipboard(jsonData, id) {
 		{/if}
 		<p on:click={expandPrompt}>{$blocks[parentID].text}</p>
 
-		
+		<a class="hover-only" on:click={()=>stitchTextAndSaveToClipboard($blocks,parentID )}>
+			<Icon src="copy.svg" color="var(--violet-dark)" width={24} height={24} class="icon" />
+			<span class="hover-text">Copy to Clipboard</span>
+		  </a>
+		  
 			
 	</header>
+
 
 	<!-- BODY -->
 	{#if expanded}
@@ -559,7 +564,7 @@ function stitchTextAndSaveToClipboard(jsonData, id) {
 				{editorRef}
 				{currentCaret}
 			/>
-
+			
 			<!-- List all blocks with id -->
 			{#if uniqueChildren?.length > 0}
 				<div class="referenced-blocks">
@@ -573,11 +578,9 @@ function stitchTextAndSaveToClipboard(jsonData, id) {
 					{/each}
 				</div>
 			{/if}
-
+			
 		</main>
-		<button on:click={()=>stitchTextAndSaveToClipboard($blocks,parentID )}>
-			Copy to Clipboard
-			</button>
+
 	{/if}
 
 </div>
@@ -693,4 +696,22 @@ function stitchTextAndSaveToClipboard(jsonData, id) {
 	/* :global(.child-block-container .child-block-container){
 		border-left: 4px solid var(--secondary);
 	} */
+	.hover-only .hover-text {
+  visibility: hidden;
+  opacity: 0;
+  transition: opacity 0.3s, visibility 0.3s;
+}
+
+.hover-only:hover .hover-text {
+  visibility: visible;
+  opacity: 1;
+}
+
+.icon {
+  transition: opacity 0.3s;
+}
+
+.hover-only:hover .icon {
+  opacity: 0.6;
+}
 </style>
