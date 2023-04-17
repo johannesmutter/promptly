@@ -8,10 +8,12 @@
 	import { onMount } from 'svelte';
 	import Icon from '$lib/Icon.svelte';
 	import { supabase } from '$lib/supabaseClient';
+	import NavPromptButton from '$lib/NavPromptButton.svelte';
 
 	let userID = data?.session?.user?.id;
 
-	const publicUserID = '69dff67a-2ccb-4071-9bbe-fe32694a194a'
+	// const publicUserID = '69dff67a-2ccb-4071-9bbe-fe32694a194a';
+	const publicUserID = '717258fb-296e-47ca-bc14-712b56dda4da'; // for featured prompts
 
 	let blocksFromDB = [];
 
@@ -44,7 +46,7 @@
 		blocksFromDB = await load();
 
 		const promptList = blocksFromDB[0]["prompt"];
-		console.log("promptList",promptList);
+		// console.log("promptList",promptList);
 
 		blocks.update(localState => {
 			return {
@@ -53,6 +55,19 @@
 			}
 		})
 	});
+
+
+	function addBlock(){
+		const newBlockID = blocks.insertBlock({text: 'Untitled Prompt', type: 'prompt', children: [{text: 'empty block'}]});
+		blocks.selectSingleBlock(newBlockID);
+	}
+
+
+	let promptRefs = {};
+
+	function changeBlockTitle(blockID: string, newTitle: string){
+		blocks.updateBlockProperty(blockID,'text',newTitle)
+	}
 </script>
 
 <main>
@@ -65,7 +80,9 @@
 					<span>Save to Cloud</span>
 				</button>
 			{/if}
-			<button class="primary">
+			<button 
+				class="primary" 
+				on:click={addBlock}>
 				<Icon src="plus.svg" color="var(--violet-lightest)" />
 				<span>New Prompt</span>
 			</button>
@@ -74,13 +91,10 @@
 		<nav>
 			<p class="caps">Prompts:</p>
 			{#each Object.entries($blocks).sort((a, b) => new Date(b[1].createdAt) - new Date(a[1].createdAt)) as [uuid, block], i}
-				<button on:click={()=>{blocks.selectSingleBlock(uuid)}} class:selected={block.selected}>
-
-					{#if block?.children?.length > 1}
-						<Icon src="message-spiral.svg" color="var(--violet-dark)" />
-					{/if}
-					<span>{block.text}</span>
-				</button>
+				<NavPromptButton
+					uuid={uuid}
+					block={block}
+				/>
 			{/each}
 		</nav>
 
@@ -141,33 +155,11 @@
 			padding: var(--size-1);
 			text-align: left;
 			display: flex;
-			gap: var(--size-2)
+			align-items: center;
+			gap: var(--size-2);
 		}
+
 		& nav > button {
-			background-color: transparent;
-			text-align: left;
-			padding: var(--size-1) var(--size-2);
-			color: var(--gey-800);
-			border: 1px solid transparent;
-			margin: 0;
-			white-space: nowrap;
-			position: relative;
-			overflow: hidden;
-			transition: all 200ms ease-in-out 0s;
-			&.selected {
-				background-color: var(--violet-lightest);
-				color: var(--violet-base);
-				border-color: var(--violet-base);
-			}
-			& span {
-				width: calc(100% - 30px);
-				display: inline-block;
-				mask-image: linear-gradient(to left, transparent, #fff 20%);
-			}
-			&:not(.selected):hover {
-				transition: all 200ms ease-in-out 0s;
-				background-color: var(--grey-300);
-			}
 		}
 	}
 </style>
