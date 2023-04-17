@@ -446,6 +446,54 @@
 			textareaRef.value = currentChildText;
 		}
 	})
+
+
+
+
+function getText(nodeId, jsonData) {
+  let text = '';
+  const node = jsonData[nodeId];
+console.log(nodeId)
+
+  if (node && Array.isArray(node.children)) {
+    node.children.forEach((child) => {
+      if (typeof child.text === 'string') {
+        text += child.text;
+		console.log(child.text)
+      } else if (typeof child.id === 'string') {
+        text += getText(child.id, jsonData);
+		console.log(text)
+      } else{
+		console.log("someting else:"+ child)
+	  }
+    });
+  }
+  console.log(text)
+  return text;
+}
+
+function saveToClipboard(text) {
+  navigator.clipboard.writeText(text).then(
+    () => {
+		alert('Text successfully copied to clipboard \n"'+text + '"')
+      console.log('Text successfully copied to clipboard');
+    },
+    (err) => {alert('Could not copy text to clipboard: ', err)
+      console.error('Could not copy text to clipboard: ', err);
+    }
+  );
+}
+
+// Main function to stitch text and save to clipboard
+function stitchTextAndSaveToClipboard(jsonData, id) {
+//	jsonData = JSON.parse(jsonData)
+  const mainNodeId = id;
+  const text = getText(mainNodeId, jsonData);
+  saveToClipboard(text);
+}
+
+
+
 </script>
 
 <div>
@@ -456,7 +504,15 @@
 			<Icon src="message-spiral.svg" color="var(--violet-dark)" />
 		{/if}
 		<p on:click={expandPrompt}>{$blocks[parentID].text}</p>
+
+		<a class="hover-only" on:click={()=>stitchTextAndSaveToClipboard($blocks,parentID )}>
+			<Icon src="copy.svg" color="var(--violet-dark)" width={24} height={24} class="icon" />
+			<span class="hover-text">Copy to Clipboard</span>
+		  </a>
+		  
+			
 	</header>
+
 
 	<!-- BODY -->
 	{#if expanded}
@@ -508,7 +564,7 @@
 				{editorRef}
 				{currentCaret}
 			/>
-
+			
 			<!-- List all blocks with id -->
 			{#if uniqueChildren?.length > 0}
 				<div class="referenced-blocks">
@@ -522,11 +578,15 @@
 					{/each}
 				</div>
 			{/if}
-
+			
 		</main>
+
 	{/if}
+
 </div>
 
+
+<!-- SAVE BUTTON-->
 
 <!-- Debugging -->
 <!-- 
@@ -636,4 +696,22 @@
 	/* :global(.child-block-container .child-block-container){
 		border-left: 4px solid var(--secondary);
 	} */
+	.hover-only .hover-text {
+  visibility: hidden;
+  opacity: 0;
+  transition: opacity 0.3s, visibility 0.3s;
+}
+
+.hover-only:hover .hover-text {
+  visibility: visible;
+  opacity: 1;
+}
+
+.icon {
+  transition: opacity 0.3s;
+}
+
+.hover-only:hover .icon {
+  opacity: 0.6;
+}
 </style>
