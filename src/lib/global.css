@@ -156,6 +156,10 @@
   --typography-spacing-vertical: 0;
 }
 
+h1, h2, h3 {
+  --typography-spacing-vertical: 0.7em;
+}
+
 /* Text alignment classes */
 .text-left {
   text-align: left;

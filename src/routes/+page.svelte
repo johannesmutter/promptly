@@ -101,15 +101,23 @@
 		</nav>
 
 		<footer>
-			<a class="button" href="mailto:promptly@mutter.co">⭐️ Give us Feedback</a>
+			<a class="button secondary" href="https://github.com/johannesmutter/promptly" target="_blank">
+				<Icon src="github.svg" color="var(--primary)" />
+				<span>Contribute on GitHub</span>
+			</a>
+			<a class="button secondary" href="mailto:promptly@mutter.co">⭐️ Give us Feedback</a>
 			{#if data.session}
-				<p style="padding: 10px 0;"><small>Signed in as: {data?.session?.user.email}</small></p>
-				<form action="/logout" method="POST" use:enhance={submitLogout}>
-					<button type="submit">Logout</button>
-				</form>
+			<p style="padding: 10px 0;"><small>Signed in as: {data?.session?.user.email}</small></p>
+			<form action="/logout" method="POST" use:enhance={submitLogout}>
+				<button type="submit">Logout</button>
+			</form>
 			{:else}
-				<a class="button" href="/otlogin">Sign Up / Login</a>
+			<a class="button" href="/otlogin">Sign Up / Login</a>
 			{/if}
+			<small style="display: flex; justify-content: space-between; padding: var(--size-1); color: var(--grey-300)">
+				<a href="/privacy">Privacy</a>&nbsp;|&nbsp;
+				<a href="/privacy">Terms of Use</a>
+			</small>
 		</footer>		
 	</aside>
 
@@ -164,6 +172,11 @@
 			align-items: center;
 			gap: var(--size-2);
 			text-decoration: none;
+			&.secondary {
+				background-color: #FFF;
+				border: 1px solid var(--primary);
+				color: var(--primary);
+			}
 		}
 
 		& nav > button {
