@@ -8,6 +8,30 @@
 	import ToggleButton from "./ToggleButton.svelte";
 	import Icon from "./Icon.svelte";
 
+
+
+	import GPT3TokenizerImport from 'gpt3-tokenizer';
+
+
+const GPT3Tokenizer = typeof GPT3TokenizerImport === 'function'
+	  ? GPT3TokenizerImport
+	  : GPT3TokenizerImport.default;
+
+const tokenizer = new GPT3Tokenizer({ type: 'gpt3' });
+
+function getTokens(input) {
+  const tokens = tokenizer.encode(input);
+  return tokens.text.length;
+}
+
+function updateTokensCount(jsonData, id) {
+//	jsonData = JSON.parse(jsonData)
+  const mainNodeId = id;
+  const text = getText(mainNodeId, jsonData);
+  return getTokens(text);
+}
+
+
 	/** @type {string} */
 	export let parentID;
 	/** @type {boolean} */
@@ -501,7 +525,7 @@ function stitchTextAndSaveToClipboard(jsonData, id) {
 		{#if uniqueChildren?.length > 0}
 			<Icon src="message-spiral.svg" color="var(--violet-dark)" />
 		{/if}
-		<p on:click={expandPrompt}>{$blocks[parentID].text}</p>
+		<p on:click={expandPrompt}>{$blocks[parentID].text} ({updateTokensCount($blocks,parentID )} tokens) </p>
 
 		<a class="hover-only" on:click={()=>stitchTextAndSaveToClipboard($blocks,parentID )}>
 			<Icon src="copy.svg" color="var(--grey-400)" width={24} height={24} class="icon" />
